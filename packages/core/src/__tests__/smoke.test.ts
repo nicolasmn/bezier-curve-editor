@@ -117,7 +117,8 @@ describe('reducers', () => {
     expect(next.value).toEqual({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })
   })
 
-  it('DEFAULT_VALUE matches ease preset', () => {
+  it('DEFAULT_VALUE is CSS ease', () => {
+    // CSS `ease` = cubic-bezier(0.25, 0.1, 0.25, 1)
     expect(DEFAULT_VALUE).toEqual({ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 })
   })
 })

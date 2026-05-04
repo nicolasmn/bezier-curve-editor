@@ -7,13 +7,13 @@ import type {
   PresetDefinition,
   SnapConfig,
 } from './types/public.js'
-import { parseBezierValue, serializeToCss, buildCurvePoints, DEFAULT_VALUE } from './math/curve.js'
+import { parseBezierValue, serializeToCss, DEFAULT_VALUE } from './math/curve.js'
 import { createInitialState } from './state/editor-state.js'
 import type { EditorState } from './state/editor-state.js'
-import { setValue, reset, selectPreset, setOvershoot, setBounds } from './state/reducers.js'
+import { setValue, reset, setOvershoot, setBounds } from './state/reducers.js'
 import { PointerController } from './interactions/pointer-controller.js'
 import { KeyboardController } from './interactions/keyboard-controller.js'
-import { emitChange, emitPresetChange, emitCopy } from './utils/events.js'
+import { emitChange, emitCopy } from './utils/events.js'
 import { handleAriaLabel } from './utils/a11y.js'
 import { PRESETS } from './presets/registry.js'
 
@@ -127,9 +127,24 @@ export class BezierCurveEditor extends LitElement {
     .copy-btn:active { opacity: 0.7; }
   `
 
-  // ─── Public properties ────────────────────────────────────────────────────────────
+  // ─── Public properties ────────────────────────────────────────────────────
 
-  @property({ type: String, reflect: true }) theme: 'auto' | 'light' | 'dark' = 'auto'
+  // theme='auto' must NOT reflect — it would write theme="auto" to the DOM and
+  // break the media query cascade. Only 'light'/'dark' should reflect.
+  @property({ type: String })
+  get theme(): 'auto' | 'light' | 'dark' { return this._theme }
+  set theme(v: 'auto' | 'light' | 'dark') {
+    const old = this._theme
+    this._theme = v
+    if (v === 'auto') {
+      this.removeAttribute('theme')
+    } else {
+      this.setAttribute('theme', v)
+    }
+    this.requestUpdate('theme', old)
+  }
+  private _theme: 'auto' | 'light' | 'dark' = 'auto'
+
   @property({ type: Boolean, reflect: true }) overshoot = false
   @property({ type: Boolean, reflect: true }) readonly = false
   @property({ type: Boolean, reflect: true }) disabled = false
@@ -139,19 +154,16 @@ export class BezierCurveEditor extends LitElement {
   @property({ type: Array }) presets: PresetDefinition[] = PRESETS
   @property({ type: String }) selectedPreset: string | null = null
 
-  @property({
-    attribute: 'value',
-    converter: {
-      fromAttribute: (v: string | null) => (v ? v : undefined),
-      toAttribute: (v: CubicBezierObject) => serializeToCss(v),
-    },
-  })
+  @property({ attribute: 'value' })
   set value(raw: BezierValue) {
     try {
       const parsed = parseBezierValue(raw)
       this._state = setValue(this._state, parsed)
+      // Track as initialValue so reset() returns here
+      this._state = { ...this._state, initialValue: parsed }
     } catch {
-      // keep current value on bad input
+      // Emit 'invalid' so consumers can react to bad attribute values
+      this.dispatchEvent(new CustomEvent('invalid', { bubbles: true, composed: true }))
     }
   }
   get value(): CubicBezierObject {
@@ -166,14 +178,14 @@ export class BezierCurveEditor extends LitElement {
     return this._state.bounds
   }
 
-  // ─── Internal state ─────────────────────────────────────────────────────────────
+  // ─── Internal state ───────────────────────────────────────────────────────
 
   @state() private _state: EditorState = createInitialState()
 
   private _pointer = new PointerController(this)
   private _keyboard = new KeyboardController(this)
 
-  // ─── Controller host interface ────────────────────────────────────────────────
+  // ─── Controller host interface ────────────────────────────────────────────
 
   get state(): EditorState {
     return this._state
@@ -191,7 +203,7 @@ export class BezierCurveEditor extends LitElement {
     return this.renderRoot.querySelector('svg')
   }
 
-  // ─── Lifecycle ─────────────────────────────────────────────────────────────────
+  // ─── Lifecycle ────────────────────────────────────────────────────────────
 
   override firstUpdated(): void {
     const svgEl = this.getSvgElement()
@@ -203,18 +215,24 @@ export class BezierCurveEditor extends LitElement {
   }
 
   override updated(changed: Map<string, unknown>): void {
+    let dirty = false
     if (changed.has('overshoot')) {
       this._state = setOvershoot(this._state, this.overshoot)
+      dirty = true
     }
     if (changed.has('readonly')) {
       this._state = { ...this._state, readonly: this.readonly }
+      dirty = true
     }
     if (changed.has('disabled')) {
       this._state = { ...this._state, disabled: this.disabled }
+      dirty = true
     }
+    // Re-render if state changed from property sync
+    if (dirty) this.requestUpdate()
   }
 
-  // ─── Public API ───────────────────────────────────────────────────────────────
+  // ─── Public API ───────────────────────────────────────────────────────────
 
   getValue(): CubicBezierObject {
     return this._state.value
@@ -225,7 +243,8 @@ export class BezierCurveEditor extends LitElement {
   }
 
   setValue(raw: BezierValue): void {
-    this._state = setValue(this._state, raw)
+    const parsed = parseBezierValue(raw)
+    this._state = { ...this._state, value: parsed, initialValue: parsed, selectedPreset: null }
     this.requestUpdate()
   }
 
@@ -238,19 +257,19 @@ export class BezierCurveEditor extends LitElement {
     super.focus()
   }
 
-  // ─── Copy ────────────────────────────────────────────────────────────────────
+  // ─── Copy ────────────────────────────────────────────────────────────────
 
   private async _copy(): Promise<void> {
     const css = this.getCssValue()
     try {
       await navigator.clipboard.writeText(css)
     } catch {
-      // clipboard not available in all contexts
+      // clipboard not available in all contexts (e.g. non-HTTPS, test env)
     }
     emitCopy(this, css)
   }
 
-  // ─── Render helpers ───────────────────────────────────────────────────────────
+  // ─── Render helpers ───────────────────────────────────────────────────────
 
   private _renderGrid() {
     if (!this.showGrid) return null
@@ -269,7 +288,6 @@ export class BezierCurveEditor extends LitElement {
   }
 
   private _renderCurve(v: CubicBezierObject) {
-    // Use SVG cubic bezier path directly for perfect accuracy
     const x1 = v.x1 * VB
     const y1 = (1 - v.y1) * VB
     const x2 = v.x2 * VB
@@ -291,11 +309,9 @@ export class BezierCurveEditor extends LitElement {
     const { focusedHandle } = this._state
 
     return svg`
-      <!-- Handle lines from anchors to control points -->
       <line class="handle-line" x1="0" y1=${VB} x2=${p1x} y2=${p1y} />
       <line class="handle-line" x1=${VB} y1="0" x2=${p2x} y2=${p2y} />
 
-      <!-- P1 handle -->
       <g
         part="handle handle-p1"
         class="handle ${focusedHandle === 'p1' ? 'handle--focused' : ''}"
@@ -306,7 +322,6 @@ export class BezierCurveEditor extends LitElement {
         <circle cx=${p1x} cy=${p1y} r=${HR} />
       </g>
 
-      <!-- P2 handle -->
       <g
         part="handle handle-p2"
         class="handle ${focusedHandle === 'p2' ? 'handle--focused' : ''}"
@@ -319,7 +334,7 @@ export class BezierCurveEditor extends LitElement {
     `
   }
 
-  // ─── Render ───────────────────────────────────────────────────────────────────
+  // ─── Render ───────────────────────────────────────────────────────────────
 
   override render() {
     const v = this._state.value

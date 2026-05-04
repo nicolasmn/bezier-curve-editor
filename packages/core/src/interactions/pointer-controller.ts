@@ -19,6 +19,7 @@ export interface PointerControllerHost extends ReactiveControllerHost {
 export class PointerController implements ReactiveController {
   private host: PointerControllerHost
   private activeHandle: ActiveHandle = null
+  private activeSvg: SVGSVGElement | null = null
 
   constructor(host: PointerControllerHost) {
     this.host = host
@@ -34,6 +35,7 @@ export class PointerController implements ReactiveController {
    * Attach to an SVG element. Call from the host's firstUpdated().
    */
   attach(svg: SVGSVGElement): void {
+    this.activeSvg = svg
     svg.addEventListener('pointerdown', this.onPointerDown)
   }
 
@@ -41,7 +43,10 @@ export class PointerController implements ReactiveController {
     const handle = resolveHandle(e.target as Element)
     if (!handle) return
     e.preventDefault()
-    ;(e.currentTarget as SVGSVGElement).setPointerCapture(e.pointerId)
+    // Capture on the SVG element directly so pointermove fires reliably
+    // even when the pointer leaves the handle circle.
+    const svg = this.activeSvg
+    if (svg) svg.setPointerCapture(e.pointerId)
     this.activeHandle = handle
     const next = startDrag(this.host.state, handle)
     this.host.onStateChange(next, null)
@@ -76,7 +81,7 @@ export class PointerController implements ReactiveController {
    * SVG Y is inverted: SVG top = bezier y=1, SVG bottom = bezier y=0.
    */
   private svgPoint(e: PointerEvent): { x: number; y: number } | null {
-    const svg = this.host.getSvgElement()
+    const svg = this.activeSvg ?? this.host.getSvgElement()
     if (!svg) return null
     const rect = svg.getBoundingClientRect()
     const x = (e.clientX - rect.left) / rect.width
