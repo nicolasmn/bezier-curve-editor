@@ -14,7 +14,6 @@ import { PointerController } from './interactions/pointer-controller.js'
 import { KeyboardController } from './interactions/keyboard-controller.js'
 import { emitChange, emitCopy, emitPresetChange } from './utils/events.js'
 import { handleAriaLabel } from './utils/a11y.js'
-import { PRESETS } from './presets/registry.js'
 
 const VB = 100
 const HR = 5
@@ -146,13 +145,10 @@ export class BezierCurveEditor extends LitElement {
   @property({ type: Array })
   get presets(): PresetDefinition[] { return this._state.presets }
   set presets(v: PresetDefinition[]) {
-    // Write directly into state so reducer calls always see current catalog
     this._state = { ...this._state, presets: v }
     this.requestUpdate('presets', undefined)
   }
 
-  // selectedPreset as a programmable property: setting it calls the reducer
-  // so value + state stay in sync. Getting it reads from state (single source of truth).
   @property({ type: String })
   get selectedPreset(): string | null { return this._state.selectedPreset }
   set selectedPreset(id: string | null) {
@@ -161,7 +157,6 @@ export class BezierCurveEditor extends LitElement {
       this.requestUpdate('selectedPreset', undefined)
       return
     }
-    // Delegate to public method so reducer + event fire consistently
     this.selectPreset(id)
   }
 
@@ -241,7 +236,7 @@ export class BezierCurveEditor extends LitElement {
     const preset = this._state.presets.find((p) => p.id === id)
     if (!preset) return
     this._state = selectPresetReducer(this._state, preset)
-    emitPresetChange(this, id, this._state.value)
+    emitPresetChange(this, preset, this._state.value)
     this.requestUpdate()
   }
 

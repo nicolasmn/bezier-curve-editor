@@ -34,6 +34,7 @@ import '@bezier-curve-editor/core'
 | `getValue` | `() => CubicBezierObject` | Returns current value as `{ x1, y1, x2, y2 }` |
 | `getCssValue` | `() => string` | Returns `cubic-bezier(...)` string at configured `precision` |
 | `setValue` | `(value: BezierValue) => void` | Set value programmatically. Accepts tuple, object, or CSS string |
+| `selectPreset` | `(id: string) => void` | Select a preset by id. No-ops if id not found. Emits `presetchange` |
 | `reset` | `() => void` | Reset to `initialValue` (value at last `setValue` call or mount) |
 | `focus` | `() => void` | Focus the editor element |
 
