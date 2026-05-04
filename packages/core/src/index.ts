@@ -3,7 +3,7 @@
 
 export * from './types/public.js'
 export * from './presets/index.js'
+export * from './math/curve.js'
 
 // Auto-registers <bezier-curve-editor> when imported
-// export * from './bezier-curve-editor.js'
-// Commented until element is implemented in M2
+export * from './bezier-curve-editor.js'
