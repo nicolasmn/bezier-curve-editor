@@ -1,0 +1,11 @@
+{
+  "extends": "@bezier-curve-editor/tsconfig/lib.json",
+  "compilerOptions": {
+    "outDir": "./dist/types",
+    "rootDir": "./src",
+    "paths": {
+      "@/types": ["./src/types/public.ts"]
+    }
+  },
+  "include": ["src"]
+}
