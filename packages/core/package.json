@@ -31,7 +31,8 @@
     "build": "vite build && tsc --emitDeclarationOnly",
     "dev": "vite build --watch",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "test:smoke": "vitest run"
   },
   "peerDependencies": {
     "lit": "^3.0.0"
@@ -41,6 +42,7 @@
     "@types/node": "^22.0.0",
     "lit": "^3.2.1",
     "typescript": "^5.7.3",
-    "vite": "^6.0.0"
+    "vite": "^6.0.0",
+    "vitest": "^2.0.0"
   }
 }
