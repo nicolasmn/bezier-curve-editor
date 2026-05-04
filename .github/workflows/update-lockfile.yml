@@ -1,0 +1,49 @@
+name: Update lockfile
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - '**/package.json'
+      - 'pnpm-workspace.yaml'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  update-lockfile:
+    name: Sync pnpm-lock.yaml
+    runs-on: ubuntu-latest
+    # Only run on PRs from the same repo (not forks) to have write access
+    if: github.event.pull_request.head.repo.full_name == github.repository
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies (no frozen)
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Commit updated lockfile
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'chore: update pnpm-lock.yaml'
+          file_pattern: pnpm-lock.yaml
+          commit_user_name: github-actions[bot]
+          commit_user_email: github-actions[bot]@users.noreply.github.com
