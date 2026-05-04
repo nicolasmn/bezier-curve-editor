@@ -1,0 +1,12 @@
+{
+  "name": "@bezier-curve-editor/shared-dev-config",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shared lint/format configs for the bezier-curve-editor monorepo",
+  "exports": {
+    "./eslint": "./eslint.js",
+    "./prettier": "./prettier.cjs"
+  },
+  "files": ["eslint.js", "prettier.cjs"],
+  "license": "MIT"
+}
