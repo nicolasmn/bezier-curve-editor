@@ -1,0 +1,93 @@
+/**
+ * Bezier Curve Editor — Design Tokens
+ *
+ * Override any of these on the host element or via ::part to theme the component.
+ * --bce-* custom properties are the stable public theming API.
+ */
+
+:host {
+  /* Brand / accent */
+  --bce-accent: #4f6ef7;
+
+  /* Surface */
+  --bce-bg: #ffffff;
+  --bce-bg-subtle: #f5f5f5;
+  --bce-border: #e0e0e0;
+
+  /* Foreground */
+  --bce-fg: #1a1a1a;
+  --bce-fg-muted: #767676;
+
+  /* Grid */
+  --bce-grid-color: #e8e8e8;
+  --bce-grid-subdivisions: 4;
+
+  /* Curve */
+  --bce-curve-color: var(--bce-accent);
+  --bce-curve-width: 2px;
+
+  /* Handles */
+  --bce-handle-size: 10px;
+  --bce-handle-color: var(--bce-accent);
+  --bce-handle-border: #ffffff;
+  --bce-handle-line-color: color-mix(in srgb, var(--bce-accent) 40%, transparent);
+
+  /* Shape */
+  --bce-radius: 8px;
+  --bce-canvas-size: 240px;
+
+  /* Typography */
+  --bce-font-family: ui-monospace, 'Cascadia Code', 'Source Code Pro', monospace;
+  --bce-font-size: 0.75rem;
+
+  /* Transitions */
+  --bce-transition: 120ms ease;
+}
+
+/* ─── Auto dark mode ──────────────────────────────────────────────────────── */
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --bce-bg: #1a1a1a;
+    --bce-bg-subtle: #242424;
+    --bce-border: #333333;
+    --bce-fg: #f0f0f0;
+    --bce-fg-muted: #888888;
+    --bce-grid-color: #2e2e2e;
+    --bce-handle-border: #1a1a1a;
+  }
+}
+
+/* ─── Forced light / dark via [theme] attribute ───────────────────────────── */
+
+:host([theme='light']) {
+  --bce-bg: #ffffff;
+  --bce-bg-subtle: #f5f5f5;
+  --bce-border: #e0e0e0;
+  --bce-fg: #1a1a1a;
+  --bce-fg-muted: #767676;
+  --bce-grid-color: #e8e8e8;
+  --bce-handle-border: #ffffff;
+}
+
+:host([theme='dark']) {
+  --bce-bg: #1a1a1a;
+  --bce-bg-subtle: #242424;
+  --bce-border: #333333;
+  --bce-fg: #f0f0f0;
+  --bce-fg-muted: #888888;
+  --bce-grid-color: #2e2e2e;
+  --bce-handle-border: #1a1a1a;
+}
+
+/* ─── Disabled / readonly states ─────────────────────────────────────────── */
+
+:host([disabled]) {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+:host([readonly]) {
+  --bce-handle-color: var(--bce-fg-muted);
+  --bce-curve-color: var(--bce-fg-muted);
+}
