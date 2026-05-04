@@ -17,7 +17,9 @@ Import and use directly in HTML:
   import '@bezier-curve-editor/core'
 </script>
 
-<bezier-curve-editor value="cubic-bezier(0.42, 0, 0.58, 1)"></bezier-curve-editor>
+<bezier-curve-editor
+  value="cubic-bezier(0.42, 0, 0.58, 1)"
+></bezier-curve-editor>
 ```
 
 Listen for changes:
@@ -27,7 +29,7 @@ const editor = document.querySelector('bezier-curve-editor')
 
 editor.addEventListener('change', (event) => {
   console.log(event.detail.cssValue) // e.g. 'cubic-bezier(0.42, 0, 0.58, 1)'
-  console.log(event.detail.value)    // { x1, y1, x2, y2 }
+  console.log(event.detail.value) // { x1, y1, x2, y2 }
 })
 ```
 
@@ -35,5 +37,5 @@ editor.addEventListener('change', (event) => {
 
 - [Preset catalog](/guide/presets)
 - [Styling with CSS custom properties](/guide/styling)
-- [Framework adapters](/guide/frameworks/react)
+- [Installation details](/guide/installation)
 - [Full API reference](/api/component)

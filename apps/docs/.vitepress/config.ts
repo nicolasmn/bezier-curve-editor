@@ -7,9 +7,7 @@ export default defineConfig({
   title: 'Bezier Curve Editor',
   description: 'Bezier curve editor web component with Lit, framework adapters, and VitePress docs',
 
-  head: [
-    ['link', { rel: 'icon', href: `${base}favicon.svg`, type: 'image/svg+xml' }],
-  ],
+  head: [['link', { rel: 'icon', href: `${base}favicon.svg`, type: 'image/svg+xml' }]],
 
   themeConfig: {
     logo: '/logo.svg',
@@ -38,15 +36,15 @@ export default defineConfig({
             { text: 'Overshoot & Bounds', link: '/guide/overshoot-and-bounds' },
           ],
         },
-        {
-          text: 'Framework Adapters',
-          items: [
-            { text: 'React', link: '/guide/frameworks/react' },
-            { text: 'Vue', link: '/guide/frameworks/vue' },
-            { text: 'Angular', link: '/guide/frameworks/angular' },
-            { text: 'Svelte', link: '/guide/frameworks/svelte' },
-          ],
-        },
+        // {
+        //   text: 'Framework Adapters',
+        //   items: [
+        //     { text: 'React', link: '/guide/frameworks/react' },
+        //     { text: 'Vue', link: '/guide/frameworks/vue' },
+        //     { text: 'Angular', link: '/guide/frameworks/angular' },
+        //     { text: 'Svelte', link: '/guide/frameworks/svelte' },
+        //   ],
+        // },
         {
           text: 'Contributing',
           items: [
@@ -68,9 +66,7 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [
-      { icon: 'github', link: 'https://github.com/nicolasmn/bezier-curve-editor' },
-    ],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/nicolasmn/bezier-curve-editor' }],
 
     editLink: {
       pattern: 'https://github.com/nicolasmn/bezier-curve-editor/edit/main/apps/docs/:path',

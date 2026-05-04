@@ -9,6 +9,9 @@ export default [
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
       parser: tsParser,
+      globals: {
+        process: 'readonly',
+      },
       parserOptions: {
         project: true,
       },
