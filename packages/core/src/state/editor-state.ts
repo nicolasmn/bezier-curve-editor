@@ -1,5 +1,6 @@
-import type { CubicBezierObject, BoundsConfig, SnapConfig } from '../types/public.js'
+import type { CubicBezierObject, BoundsConfig, SnapConfig, PresetDefinition } from '../types/public.js'
 import { DEFAULT_VALUE } from '../math/curve.js'
+import { PRESETS } from '../presets/registry.js'
 
 /**
  * Which handle is currently being dragged or has keyboard focus.
@@ -21,6 +22,8 @@ export interface EditorState {
   focusedHandle: ActiveHandle
   /** ID of the currently selected preset, if any */
   selectedPreset: string | null
+  /** Available preset catalog */
+  presets: PresetDefinition[]
   /** Bounds clamping mode */
   bounds: BoundsConfig
   /** Whether overshoot Y values are permitted */
@@ -46,6 +49,7 @@ export function createInitialState(
     dragging: null,
     focusedHandle: null,
     selectedPreset: null,
+    presets: PRESETS,
     bounds: 'css',
     overshoot: false,
     snap: 0,

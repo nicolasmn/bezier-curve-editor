@@ -13,14 +13,3 @@ export function handleAriaLabel(
   const fy = y.toFixed(precision)
   return `${name}, x ${fx}, y ${fy}. Use arrow keys to move.`
 }
-
-/**
- * Minimum accessible role and tabIndex for the host element.
- */
-export function hostA11yAttrs() {
-  return {
-    role: 'group',
-    'aria-label': 'Bezier curve editor',
-    tabIndex: 0,
-  } as const
-}
