@@ -1,0 +1,38 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["NODE_ENV"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**", ".vitepress/dist/**"]
+    },
+    "dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "lint": {
+      "outputs": []
+    },
+    "typecheck": {
+      "dependsOn": ["^build"],
+      "outputs": []
+    },
+    "docs:dev": {
+      "persistent": true,
+      "cache": false
+    },
+    "docs:build": {
+      "dependsOn": ["^build"],
+      "outputs": [".vitepress/dist/**"]
+    },
+    "docs:preview": {
+      "cache": false
+    },
+    "test": {
+      "outputs": ["coverage/**"]
+    },
+    "test:smoke": {
+      "outputs": []
+    }
+  }
+}
