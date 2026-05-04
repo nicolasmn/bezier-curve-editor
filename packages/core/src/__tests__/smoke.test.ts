@@ -32,8 +32,9 @@ describe('parseBezierValue', () => {
   })
 
   it('throws on short tuple', () => {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    expect(() => parseBezierValue([0.42, 0] as any)).toThrow()
+    const short: unknown = [0.42, 0]
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+    expect(() => parseBezierValue(short as Parameters<typeof parseBezierValue>[0])).toThrow()
   })
 })
 

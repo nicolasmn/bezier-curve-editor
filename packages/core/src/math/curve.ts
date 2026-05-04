@@ -7,7 +7,7 @@ export function parseBezierValue(value: BezierValue): CubicBezierObject {
     return parseString(value)
   }
   if (Array.isArray(value)) {
-    return parseTuple(value as CubicBezierTuple)
+    return parseTuple(value)
   }
   if (isObject(value)) {
     return parseObject(value)
@@ -23,7 +23,6 @@ function parseString(value: string): CubicBezierObject {
   if (!match) {
     throw new Error(`[bezier-curve-editor] Cannot parse cubic-bezier string: "${value}"`)
   }
-  // match[1..4] are always strings when the regex matched — cast via Number()
   return parseTuple([
     Number(match[1]),
     Number(match[2]),
@@ -84,12 +83,8 @@ export function clampPoint(
   y: number,
   bounds: BoundsConfig,
 ): { x: number; y: number } {
-  if (bounds === 'free') {
-    return { x, y }
-  }
-  if (bounds === 'css') {
-    return { x: clamp(x, 0, 1), y: clamp(y, 0, 1) }
-  }
+  if (bounds === 'free') return { x, y }
+  if (bounds === 'css') return { x: clamp(x, 0, 1), y: clamp(y, 0, 1) }
   return {
     x: clamp(x, bounds.xMin, bounds.xMax),
     y: clamp(y, bounds.yMin, bounds.yMax),
@@ -102,27 +97,19 @@ function clamp(value: number, min: number, max: number): number {
 
 // ─── Sampling ────────────────────────────────────────────────────────────────────
 
-export function sampleCurve1D(
-  t: number,
-  p0: number,
-  p1: number,
-  p2: number,
-  p3: number,
-): number {
+export function sampleCurve1D(t: number, p0: number, p1: number, p2: number, p3: number): number {
   const mt = 1 - t
   return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3
 }
 
-export function buildCurvePoints(
-  value: CubicBezierObject,
-  steps = 60,
-): Array<{ x: number; y: number }> {
+export function buildCurvePoints(value: CubicBezierObject, steps = 60): Array<{ x: number; y: number }> {
   const points: Array<{ x: number; y: number }> = []
   for (let i = 0; i <= steps; i++) {
     const t = i / steps
-    const x = sampleCurve1D(t, 0, value.x1, value.x2, 1)
-    const y = sampleCurve1D(t, 0, value.y1, value.y2, 1)
-    points.push({ x, y })
+    points.push({
+      x: sampleCurve1D(t, 0, value.x1, value.x2, 1),
+      y: sampleCurve1D(t, 0, value.y1, value.y2, 1),
+    })
   }
   return points
 }
@@ -133,7 +120,7 @@ export function isOvershoot(value: CubicBezierObject): boolean {
   return value.y1 < 0 || value.y1 > 1 || value.y2 < 0 || value.y2 > 1
 }
 
-// ─── Default value ─────────────────────────────────────────────────────────────
+// ─── Default ───────────────────────────────────────────────────────────────────
 
-/** Canonical default: CSS `ease` = cubic-bezier(0.25, 0.1, 0.25, 1) */
+/** CSS `ease` = cubic-bezier(0.25, 0.1, 0.25, 1) */
 export const DEFAULT_VALUE: CubicBezierObject = { x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 }
