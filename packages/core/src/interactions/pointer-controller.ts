@@ -8,14 +8,6 @@ export interface PointerControllerHost extends ReactiveControllerHost {
   getSvgElement(): SVGSVGElement | null
 }
 
-/**
- * Manages pointer (mouse/touch/pen) drag interactions on the SVG canvas.
- *
- * Coordinate transform:
- *   SVG clientX/Y  →  bezier [0,1] space
- *   x maps left→right = 0→1
- *   y maps bottom→top = 0→1  (SVG Y axis is inverted)
- */
 export class PointerController implements ReactiveController {
   private host: PointerControllerHost
   private activeHandle: ActiveHandle = null
@@ -27,13 +19,8 @@ export class PointerController implements ReactiveController {
   }
 
   hostConnected(): void {}
-  hostDisconnected(): void {
-    this.removeListeners()
-  }
+  hostDisconnected(): void { this.removeListeners() }
 
-  /**
-   * Attach to an SVG element. Call from the host's firstUpdated().
-   */
   attach(svg: SVGSVGElement): void {
     this.activeSvg = svg
     svg.addEventListener('pointerdown', this.onPointerDown)
@@ -43,62 +30,47 @@ export class PointerController implements ReactiveController {
     const handle = resolveHandle(e.target as Element)
     if (!handle) return
     e.preventDefault()
-    // Capture on the SVG element directly so pointermove fires reliably
-    // even when the pointer leaves the handle circle.
-    const svg = this.activeSvg
-    if (svg) svg.setPointerCapture(e.pointerId)
+    this.activeSvg?.setPointerCapture(e.pointerId)
     this.activeHandle = handle
-    const next = startDrag(this.host.state, handle)
-    this.host.onStateChange(next, null)
-    window.addEventListener('pointermove', this.onPointerMove)
-    window.addEventListener('pointerup', this.onPointerUp)
+    this.host.onStateChange(startDrag(this.host.state, handle), null)
+    globalThis.addEventListener('pointermove', this.onPointerMove)
+    globalThis.addEventListener('pointerup', this.onPointerUp)
   }
 
   private onPointerMove = (e: PointerEvent): void => {
     if (!this.activeHandle) return
     const pt = this.svgPoint(e)
     if (!pt) return
-    const next = setHandle(this.host.state, this.activeHandle, pt.x, pt.y)
-    this.host.onStateChange(next, 'input')
+    this.host.onStateChange(setHandle(this.host.state, this.activeHandle, pt.x, pt.y), 'input')
   }
 
   private onPointerUp = (e: PointerEvent): void => {
     if (!this.activeHandle) return
     const pt = this.svgPoint(e)
-    if (pt) {
-      const withHandle = setHandle(this.host.state, this.activeHandle, pt.x, pt.y)
-      const next = endDrag(withHandle)
-      this.host.onStateChange(next, 'change')
-    } else {
-      this.host.onStateChange(endDrag(this.host.state), 'change')
-    }
+    const next = pt
+      ? endDrag(setHandle(this.host.state, this.activeHandle, pt.x, pt.y))
+      : endDrag(this.host.state)
+    this.host.onStateChange(next, 'change')
     this.activeHandle = null
     this.removeListeners()
   }
 
-  /**
-   * Transform a PointerEvent clientX/Y into bezier [0,1] coordinates.
-   * SVG Y is inverted: SVG top = bezier y=1, SVG bottom = bezier y=0.
-   */
   private svgPoint(e: PointerEvent): { x: number; y: number } | null {
     const svg = this.activeSvg ?? this.host.getSvgElement()
     if (!svg) return null
     const rect = svg.getBoundingClientRect()
-    const x = (e.clientX - rect.left) / rect.width
-    const y = 1 - (e.clientY - rect.top) / rect.height
-    return { x, y }
+    return {
+      x: (e.clientX - rect.left) / rect.width,
+      y: 1 - (e.clientY - rect.top) / rect.height,
+    }
   }
 
   private removeListeners(): void {
-    window.removeEventListener('pointermove', this.onPointerMove)
-    window.removeEventListener('pointerup', this.onPointerUp)
+    globalThis.removeEventListener('pointermove', this.onPointerMove)
+    globalThis.removeEventListener('pointerup', this.onPointerUp)
   }
 }
 
-/**
- * Walk up the DOM from the event target to find a handle element.
- * Handles must have data-handle="p1" or data-handle="p2".
- */
 function resolveHandle(el: Element | null): ActiveHandle {
   while (el) {
     const h = el.getAttribute?.('data-handle')

@@ -1,11 +1,7 @@
 import type { BezierValue, CubicBezierObject, CubicBezierTuple, BoundsConfig } from '../types/public.js'
 
-// ─── Parse ───────────────────────────────────────────────────────────────────
+// ─── Parse ───────────────────────────────────────────────────────────────
 
-/**
- * Parse any accepted input format into a normalized CubicBezierObject.
- * Throws on invalid input.
- */
 export function parseBezierValue(value: BezierValue): CubicBezierObject {
   if (typeof value === 'string') {
     return parseString(value)
@@ -27,11 +23,12 @@ function parseString(value: string): CubicBezierObject {
   if (!match) {
     throw new Error(`[bezier-curve-editor] Cannot parse cubic-bezier string: "${value}"`)
   }
+  // match[1..4] are always strings when the regex matched — cast via Number()
   return parseTuple([
-    parseFloat(match[1]!),
-    parseFloat(match[2]!),
-    parseFloat(match[3]!),
-    parseFloat(match[4]!),
+    Number(match[1]),
+    Number(match[2]),
+    Number(match[3]),
+    Number(match[4]),
   ])
 }
 
@@ -65,34 +62,23 @@ function isObject(v: unknown): v is CubicBezierObject {
 
 function assertFinite(n: unknown, name: string): asserts n is number {
   if (typeof n !== 'number' || !isFinite(n)) {
-    throw new Error(`[bezier-curve-editor] "${name}" must be a finite number, got: ${n}`)
+    throw new Error(`[bezier-curve-editor] "${name}" must be a finite number, got: ${String(n)}`)
   }
 }
 
 // ─── Serialize ───────────────────────────────────────────────────────────────
 
-/**
- * Serialize a CubicBezierObject to a CSS cubic-bezier() string.
- * Precision defaults to 4 decimal places, trailing zeros stripped.
- */
 export function serializeToCss(value: CubicBezierObject, precision = 4): string {
   const fmt = (n: number) => parseFloat(n.toFixed(precision)).toString()
   return `cubic-bezier(${fmt(value.x1)}, ${fmt(value.y1)}, ${fmt(value.x2)}, ${fmt(value.y2)})`
 }
 
-/**
- * Convert CubicBezierObject to a 4-element tuple.
- */
 export function toTuple(value: CubicBezierObject): CubicBezierTuple {
   return [value.x1, value.y1, value.x2, value.y2]
 }
 
-// ─── Clamping ────────────────────────────────────────────────────────────────
+// ─── Clamping ────────────────────────────────────────────────────────────────────
 
-/**
- * Clamp a handle coordinate pair against the active bounds config.
- * X is always clamped to [0, 1] in 'css' mode per spec.
- */
 export function clampPoint(
   x: number,
   y: number,
@@ -102,10 +88,7 @@ export function clampPoint(
     return { x, y }
   }
   if (bounds === 'css') {
-    return {
-      x: clamp(x, 0, 1),
-      y: clamp(y, 0, 1),
-    }
+    return { x: clamp(x, 0, 1), y: clamp(y, 0, 1) }
   }
   return {
     x: clamp(x, bounds.xMin, bounds.xMax),
@@ -117,14 +100,8 @@ function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }
 
-// ─── Sampling ────────────────────────────────────────────────────────────────
+// ─── Sampling ────────────────────────────────────────────────────────────────────
 
-/**
- * Sample a 1D cubic bezier at parameter t ∈ [0, 1].
- * Used for preview animation curve rendering.
- *
- * Computes B(t) = (1-t)³·p0 + 3(1-t)²t·p1 + 3(1-t)t²·p2 + t³·p3
- */
 export function sampleCurve1D(
   t: number,
   p0: number,
@@ -136,13 +113,6 @@ export function sampleCurve1D(
   return mt * mt * mt * p0 + 3 * mt * mt * t * p1 + 3 * mt * t * t * p2 + t * t * t * p3
 }
 
-/**
- * Build an array of {x, y} SVG points for rendering the bezier curve.
- * Samples the X and Y axes independently using the control points.
- *
- * @param value  - Normalized cubic bezier
- * @param steps  - Number of sample points (default 60)
- */
 export function buildCurvePoints(
   value: CubicBezierObject,
   steps = 60,
@@ -157,17 +127,13 @@ export function buildCurvePoints(
   return points
 }
 
-// ─── Overshoot ───────────────────────────────────────────────────────────────
+// ─── Overshoot ───────────────────────────────────────────────────────────────────
 
-/**
- * Returns true if any Y control point falls outside [0, 1].
- * Used to warn or prompt enabling overshoot mode.
- */
 export function isOvershoot(value: CubicBezierObject): boolean {
   return value.y1 < 0 || value.y1 > 1 || value.y2 < 0 || value.y2 > 1
 }
 
-// ─── Default value ───────────────────────────────────────────────────────────
+// ─── Default value ─────────────────────────────────────────────────────────────
 
-/** Canonical default value: CSS ease */
+/** Canonical default: CSS `ease` = cubic-bezier(0.25, 0.1, 0.25, 1) */
 export const DEFAULT_VALUE: CubicBezierObject = { x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 }

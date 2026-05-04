@@ -9,75 +9,59 @@ import { createInitialState } from '../state/editor-state.js'
 import { setHandle, reset, selectPreset } from '../state/reducers.js'
 import { PRESETS } from '../presets/registry.js'
 
-// ─── Parser ───────────────────────────────────────────────────────────────
-
 describe('parseBezierValue', () => {
   it('parses a 4-tuple', () => {
-    const result = parseBezierValue([0.42, 0, 0.58, 1])
-    expect(result).toEqual({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })
+    expect(parseBezierValue([0.42, 0, 0.58, 1])).toEqual({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })
   })
 
   it('parses a CSS string', () => {
-    const result = parseBezierValue('cubic-bezier(0.42, 0, 0.58, 1)')
-    expect(result).toEqual({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })
+    expect(parseBezierValue('cubic-bezier(0.42, 0, 0.58, 1)')).toEqual({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })
   })
 
   it('parses an object', () => {
-    const result = parseBezierValue({ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 })
-    expect(result).toEqual({ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 })
+    expect(parseBezierValue({ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 })).toEqual({ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 })
   })
 
-  it('round-trips: tuple → object → css string → object', () => {
+  it('round-trips: tuple → css string → object', () => {
     const original = parseBezierValue([0.42, 0, 0.58, 1])
-    const css = serializeToCss(original)
-    const reparsed = parseBezierValue(css)
-    expect(reparsed).toEqual(original)
+    expect(parseBezierValue(serializeToCss(original))).toEqual(original)
   })
 
-  it('throws on invalid input', () => {
-    expect(() => parseBezierValue('not-a-bezier' as never)).toThrow()
-    expect(() => parseBezierValue([0.42, 0] as never)).toThrow()
+  it('throws on invalid string', () => {
+    expect(() => parseBezierValue('not-a-bezier')).toThrow()
+  })
+
+  it('throws on short tuple', () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    expect(() => parseBezierValue([0.42, 0] as any)).toThrow()
   })
 })
 
-// ─── Serializer ────────────────────────────────────────────────────────────
-
 describe('serializeToCss', () => {
-  it('produces correct cubic-bezier string', () => {
-    expect(serializeToCss({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })).toBe(
-      'cubic-bezier(0.42, 0, 0.58, 1)',
-    )
+  it('produces correct string', () => {
+    expect(serializeToCss({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })).toBe('cubic-bezier(0.42, 0, 0.58, 1)')
   })
 
   it('strips trailing zeros', () => {
-    expect(serializeToCss({ x1: 0.5, y1: 0, x2: 0.5, y2: 1 })).toBe(
-      'cubic-bezier(0.5, 0, 0.5, 1)',
-    )
+    expect(serializeToCss({ x1: 0.5, y1: 0, x2: 0.5, y2: 1 })).toBe('cubic-bezier(0.5, 0, 0.5, 1)')
   })
 
   it('respects precision override', () => {
-    const result = serializeToCss({ x1: 0.123456, y1: 0, x2: 0.654321, y2: 1 }, 2)
-    expect(result).toBe('cubic-bezier(0.12, 0, 0.65, 1)')
+    expect(serializeToCss({ x1: 0.123456, y1: 0, x2: 0.654321, y2: 1 }, 2)).toBe('cubic-bezier(0.12, 0, 0.65, 1)')
   })
 })
-
-// ─── Overshoot detection ──────────────────────────────────────────────────
 
 describe('isOvershoot', () => {
   it('returns false for in-bounds value', () => {
     expect(isOvershoot({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })).toBe(false)
   })
-
   it('returns true when y1 < 0', () => {
     expect(isOvershoot({ x1: 0.36, y1: -0.56, x2: 0.64, y2: 1 })).toBe(true)
   })
-
   it('returns true when y2 > 1', () => {
     expect(isOvershoot({ x1: 0.34, y1: 0, x2: 0.64, y2: 1.56 })).toBe(true)
   })
 })
-
-// ─── State reducers ─────────────────────────────────────────────────────────
 
 describe('reducers', () => {
   it('setHandle moves p1 and clears selectedPreset', () => {
@@ -89,36 +73,30 @@ describe('reducers', () => {
   })
 
   it('setHandle clamps to [0,1] in css bounds mode', () => {
-    const state = createInitialState()
-    const next = setHandle(state, 'p2', 1.5, -0.5)
+    const next = setHandle(createInitialState(), 'p2', 1.5, -0.5)
     expect(next.value.x2).toBe(1)
     expect(next.value.y2).toBe(0)
   })
 
   it('setHandle is no-op when readonly', () => {
     const state = createInitialState({ readonly: true })
-    const next = setHandle(state, 'p1', 0.9, 0.9)
-    expect(next).toBe(state)
+    expect(setHandle(state, 'p1', 0.9, 0.9)).toBe(state)
   })
 
   it('reset restores initialValue', () => {
     const initial = parseBezierValue([0.42, 0, 0.58, 1])
     const state = createInitialState({ value: initial, initialValue: initial })
-    const moved = setHandle(state, 'p1', 0.9, 0.9)
-    const restored = reset(moved)
-    expect(restored.value).toEqual(initial)
+    expect(reset(setHandle(state, 'p1', 0.9, 0.9)).value).toEqual(initial)
   })
 
   it('selectPreset applies preset value', () => {
     const preset = PRESETS.find((p) => p.id === 'ease-in-out')!
-    const state = createInitialState()
-    const next = selectPreset(state, preset)
+    const next = selectPreset(createInitialState(), preset)
     expect(next.selectedPreset).toBe('ease-in-out')
     expect(next.value).toEqual({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })
   })
 
   it('DEFAULT_VALUE is CSS ease', () => {
-    // CSS `ease` = cubic-bezier(0.25, 0.1, 0.25, 1)
     expect(DEFAULT_VALUE).toEqual({ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 })
   })
 })

@@ -5,9 +5,8 @@ import type {
   BoundsConfig,
   CubicBezierObject,
   PresetDefinition,
-  SnapConfig,
 } from './types/public.js'
-import { parseBezierValue, serializeToCss, DEFAULT_VALUE } from './math/curve.js'
+import { parseBezierValue, serializeToCss } from './math/curve.js'
 import { createInitialState } from './state/editor-state.js'
 import type { EditorState } from './state/editor-state.js'
 import { setValue, reset, setOvershoot, setBounds } from './state/reducers.js'
@@ -17,11 +16,8 @@ import { emitChange, emitCopy } from './utils/events.js'
 import { handleAriaLabel } from './utils/a11y.js'
 import { PRESETS } from './presets/registry.js'
 
-/** SVG viewBox size in user units */
 const VB = 100
-/** Handle radius (normal) */
 const HR = 5
-/** Grid subdivisions */
 const GRID = 4
 
 @customElement('bezier-curve-editor')
@@ -129,8 +125,6 @@ export class BezierCurveEditor extends LitElement {
 
   // ─── Public properties ────────────────────────────────────────────────────
 
-  // theme='auto' must NOT reflect — it would write theme="auto" to the DOM and
-  // break the media query cascade. Only 'light'/'dark' should reflect.
   @property({ type: String })
   get theme(): 'auto' | 'light' | 'dark' { return this._theme }
   set theme(v: 'auto' | 'light' | 'dark') {
@@ -159,10 +153,8 @@ export class BezierCurveEditor extends LitElement {
     try {
       const parsed = parseBezierValue(raw)
       this._state = setValue(this._state, parsed)
-      // Track as initialValue so reset() returns here
       this._state = { ...this._state, initialValue: parsed }
     } catch {
-      // Emit 'invalid' so consumers can react to bad attribute values
       this.dispatchEvent(new CustomEvent('invalid', { bubbles: true, composed: true }))
     }
   }
@@ -193,9 +185,7 @@ export class BezierCurveEditor extends LitElement {
 
   onStateChange(next: EditorState, emit: 'input' | 'change' | null): void {
     this._state = next
-    if (emit) {
-      emitChange(this, next.value, next.selectedPreset, emit)
-    }
+    if (emit) emitChange(this, next.value, next.selectedPreset, emit)
     this.requestUpdate()
   }
 
@@ -216,31 +206,17 @@ export class BezierCurveEditor extends LitElement {
 
   override updated(changed: Map<string, unknown>): void {
     let dirty = false
-    if (changed.has('overshoot')) {
-      this._state = setOvershoot(this._state, this.overshoot)
-      dirty = true
-    }
-    if (changed.has('readonly')) {
-      this._state = { ...this._state, readonly: this.readonly }
-      dirty = true
-    }
-    if (changed.has('disabled')) {
-      this._state = { ...this._state, disabled: this.disabled }
-      dirty = true
-    }
-    // Re-render if state changed from property sync
+    if (changed.has('overshoot')) { this._state = setOvershoot(this._state, this.overshoot); dirty = true }
+    if (changed.has('readonly'))  { this._state = { ...this._state, readonly: this.readonly };   dirty = true }
+    if (changed.has('disabled'))  { this._state = { ...this._state, disabled: this.disabled };   dirty = true }
     if (dirty) this.requestUpdate()
   }
 
   // ─── Public API ───────────────────────────────────────────────────────────
 
-  getValue(): CubicBezierObject {
-    return this._state.value
-  }
+  getValue(): CubicBezierObject { return this._state.value }
 
-  getCssValue(): string {
-    return serializeToCss(this._state.value, this.precision)
-  }
+  getCssValue(): string { return serializeToCss(this._state.value, this.precision) }
 
   setValue(raw: BezierValue): void {
     const parsed = parseBezierValue(raw)
@@ -253,18 +229,18 @@ export class BezierCurveEditor extends LitElement {
     this.requestUpdate()
   }
 
-  override focus(): void {
-    super.focus()
-  }
+  override focus(): void { super.focus() }
 
   // ─── Copy ────────────────────────────────────────────────────────────────
 
-  private async _copy(): Promise<void> {
+  // Arrow property — avoids @typescript-eslint/unbound-method when passed as event handler
+  private readonly _copy = async (): Promise<void> => {
     const css = this.getCssValue()
     try {
-      await navigator.clipboard.writeText(css)
+      // globalThis.navigator is always defined in browsers; guard satisfies no-undef
+      await globalThis.navigator.clipboard.writeText(css)
     } catch {
-      // clipboard not available in all contexts (e.g. non-HTTPS, test env)
+      // clipboard unavailable (non-HTTPS, test env, etc.)
     }
     emitCopy(this, css)
   }
@@ -293,11 +269,7 @@ export class BezierCurveEditor extends LitElement {
     const x2 = v.x2 * VB
     const y2 = (1 - v.y2) * VB
     return svg`
-      <path
-        part="curve"
-        class="curve-path"
-        d="M 0 ${VB} C ${x1} ${y1}, ${x2} ${y2}, ${VB} 0"
-      />
+      <path part="curve" class="curve-path" d="M 0 ${VB} C ${x1} ${y1}, ${x2} ${y2}, ${VB} 0" />
     `
   }
 
@@ -307,28 +279,17 @@ export class BezierCurveEditor extends LitElement {
     const p2x = v.x2 * VB
     const p2y = (1 - v.y2) * VB
     const { focusedHandle } = this._state
-
     return svg`
       <line class="handle-line" x1="0" y1=${VB} x2=${p1x} y2=${p1y} />
       <line class="handle-line" x1=${VB} y1="0" x2=${p2x} y2=${p2y} />
-
-      <g
-        part="handle handle-p1"
+      <g part="handle handle-p1"
         class="handle ${focusedHandle === 'p1' ? 'handle--focused' : ''}"
-        data-handle="p1"
-        aria-label=${handleAriaLabel('p1', v.x1, v.y1)}
-        role="slider"
-      >
+        data-handle="p1" aria-label=${handleAriaLabel('p1', v.x1, v.y1)} role="slider">
         <circle cx=${p1x} cy=${p1y} r=${HR} />
       </g>
-
-      <g
-        part="handle handle-p2"
+      <g part="handle handle-p2"
         class="handle ${focusedHandle === 'p2' ? 'handle--focused' : ''}"
-        data-handle="p2"
-        aria-label=${handleAriaLabel('p2', v.x2, v.y2)}
-        role="slider"
-      >
+        data-handle="p2" aria-label=${handleAriaLabel('p2', v.x2, v.y2)} role="slider">
         <circle cx=${p2x} cy=${p2y} r=${HR} />
       </g>
     `
@@ -339,35 +300,19 @@ export class BezierCurveEditor extends LitElement {
   override render() {
     const v = this._state.value
     const cssVal = serializeToCss(v, this.precision)
-
     return html`
       <div part="container" class="container">
         <div class="canvas-wrap">
-          <svg
-            part="grid"
-            viewBox="0 0 ${VB} ${VB}"
-            aria-hidden="true"
-            focusable="false"
-          >
+          <svg part="grid" viewBox="0 0 ${VB} ${VB}" aria-hidden="true" focusable="false">
             ${this._renderGrid()}
             ${this._renderCurve(v)}
             ${this._renderHandles(v)}
           </svg>
         </div>
-
         <div part="toolbar" class="toolbar">
-          <span part="value-output" class="value-output" title=${cssVal}>
-            ${cssVal}
-          </span>
-          <button
-            part="button"
-            class="copy-btn"
-            type="button"
-            aria-label="Copy CSS value"
-            @click=${this._copy}
-          >
-            Copy
-          </button>
+          <span part="value-output" class="value-output" title=${cssVal}>${cssVal}</span>
+          <button part="button" class="copy-btn" type="button"
+            aria-label="Copy CSS value" @click=${this._copy}>Copy</button>
         </div>
       </div>
     `
@@ -375,7 +320,5 @@ export class BezierCurveEditor extends LitElement {
 }
 
 declare global {
-  interface HTMLElementTagNameMap {
-    'bezier-curve-editor': BezierCurveEditor
-  }
+  interface HTMLElementTagNameMap { 'bezier-curve-editor': BezierCurveEditor }
 }
