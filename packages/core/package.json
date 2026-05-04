@@ -6,21 +6,27 @@
   "type": "module",
   "exports": {
     ".": {
+      "types": "./dist/types/index.d.ts",
       "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/types/index.d.ts"
+      "require": "./dist/index.cjs"
     },
     "./presets": {
+      "types": "./dist/types/presets/index.d.ts",
       "import": "./dist/presets.js",
-      "require": "./dist/presets.cjs",
-      "types": "./dist/types/presets/index.d.ts"
+      "require": "./dist/presets.cjs"
     }
   },
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
   "types": "./dist/types/index.d.ts",
-  "files": ["dist", "custom-elements.json"],
-  "sideEffects": ["./dist/index.js", "./dist/index.cjs"],
+  "files": [
+    "dist",
+    "custom-elements.json"
+  ],
+  "sideEffects": [
+    "./dist/index.js",
+    "./dist/index.cjs"
+  ],
   "scripts": {
     "build": "vite build && tsc --emitDeclarationOnly",
     "dev": "vite build --watch",
