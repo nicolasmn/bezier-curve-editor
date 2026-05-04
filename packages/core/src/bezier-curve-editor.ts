@@ -9,10 +9,10 @@ import type {
 import { parseBezierValue, serializeToCss } from './math/curve.js'
 import { createInitialState } from './state/editor-state.js'
 import type { EditorState } from './state/editor-state.js'
-import { setValue, reset, setOvershoot, setBounds } from './state/reducers.js'
+import { setValue, reset, setOvershoot, setBounds, selectPreset as selectPresetReducer } from './state/reducers.js'
 import { PointerController } from './interactions/pointer-controller.js'
 import { KeyboardController } from './interactions/keyboard-controller.js'
-import { emitChange, emitCopy } from './utils/events.js'
+import { emitChange, emitCopy, emitPresetChange } from './utils/events.js'
 import { handleAriaLabel } from './utils/a11y.js'
 import { PRESETS } from './presets/registry.js'
 
@@ -130,11 +130,8 @@ export class BezierCurveEditor extends LitElement {
   set theme(v: 'auto' | 'light' | 'dark') {
     const old = this._theme
     this._theme = v
-    if (v === 'auto') {
-      this.removeAttribute('theme')
-    } else {
-      this.setAttribute('theme', v)
-    }
+    if (v === 'auto') this.removeAttribute('theme')
+    else this.setAttribute('theme', v)
     this.requestUpdate('theme', old)
   }
   private _theme: 'auto' | 'light' | 'dark' = 'auto'
@@ -145,8 +142,28 @@ export class BezierCurveEditor extends LitElement {
   @property({ type: Boolean }) showGrid = true
   @property({ type: Boolean }) showPreview = true
   @property({ type: Number }) precision = 4
-  @property({ type: Array }) presets: PresetDefinition[] = PRESETS
-  @property({ type: String }) selectedPreset: string | null = null
+
+  @property({ type: Array })
+  get presets(): PresetDefinition[] { return this._state.presets }
+  set presets(v: PresetDefinition[]) {
+    // Write directly into state so reducer calls always see current catalog
+    this._state = { ...this._state, presets: v }
+    this.requestUpdate('presets', undefined)
+  }
+
+  // selectedPreset as a programmable property: setting it calls the reducer
+  // so value + state stay in sync. Getting it reads from state (single source of truth).
+  @property({ type: String })
+  get selectedPreset(): string | null { return this._state.selectedPreset }
+  set selectedPreset(id: string | null) {
+    if (id === null) {
+      this._state = { ...this._state, selectedPreset: null }
+      this.requestUpdate('selectedPreset', undefined)
+      return
+    }
+    // Delegate to public method so reducer + event fire consistently
+    this.selectPreset(id)
+  }
 
   @property({ attribute: 'value' })
   set value(raw: BezierValue) {
@@ -158,17 +175,11 @@ export class BezierCurveEditor extends LitElement {
       this.dispatchEvent(new CustomEvent('invalid', { bubbles: true, composed: true }))
     }
   }
-  get value(): CubicBezierObject {
-    return this._state.value
-  }
+  get value(): CubicBezierObject { return this._state.value }
 
   @property({})
-  set bounds(b: BoundsConfig) {
-    this._state = setBounds(this._state, b)
-  }
-  get bounds(): BoundsConfig {
-    return this._state.bounds
-  }
+  set bounds(b: BoundsConfig) { this._state = setBounds(this._state, b) }
+  get bounds(): BoundsConfig { return this._state.bounds }
 
   // ─── Internal state ───────────────────────────────────────────────────────
 
@@ -179,9 +190,7 @@ export class BezierCurveEditor extends LitElement {
 
   // ─── Controller host interface ────────────────────────────────────────────
 
-  get state(): EditorState {
-    return this._state
-  }
+  get state(): EditorState { return this._state }
 
   onStateChange(next: EditorState, emit: 'input' | 'change' | null): void {
     this._state = next
@@ -207,8 +216,8 @@ export class BezierCurveEditor extends LitElement {
   override updated(changed: Map<string, unknown>): void {
     let dirty = false
     if (changed.has('overshoot')) { this._state = setOvershoot(this._state, this.overshoot); dirty = true }
-    if (changed.has('readonly'))  { this._state = { ...this._state, readonly: this.readonly };   dirty = true }
-    if (changed.has('disabled'))  { this._state = { ...this._state, disabled: this.disabled };   dirty = true }
+    if (changed.has('readonly'))  { this._state = { ...this._state, readonly: this.readonly };  dirty = true }
+    if (changed.has('disabled'))  { this._state = { ...this._state, disabled: this.disabled };  dirty = true }
     if (dirty) this.requestUpdate()
   }
 
@@ -224,6 +233,18 @@ export class BezierCurveEditor extends LitElement {
     this.requestUpdate()
   }
 
+  /**
+   * Select a preset by id. No-ops if id not found in current preset catalog.
+   * Emits `presetchange` on success.
+   */
+  selectPreset(id: string): void {
+    const preset = this._state.presets.find((p) => p.id === id)
+    if (!preset) return
+    this._state = selectPresetReducer(this._state, preset)
+    emitPresetChange(this, id, this._state.value)
+    this.requestUpdate()
+  }
+
   reset(): void {
     this._state = reset(this._state)
     this.requestUpdate()
@@ -231,13 +252,11 @@ export class BezierCurveEditor extends LitElement {
 
   override focus(): void { super.focus() }
 
-  // ─── Copy ────────────────────────────────────────────────────────────────
+  // ─── Copy ─────────────────────────────────────────────────────────────────
 
-  // Arrow property — avoids @typescript-eslint/unbound-method when passed as event handler
   private readonly _copy = async (): Promise<void> => {
     const css = this.getCssValue()
     try {
-      // globalThis.navigator is always defined in browsers; guard satisfies no-undef
       await globalThis.navigator.clipboard.writeText(css)
     } catch {
       // clipboard unavailable (non-HTTPS, test env, etc.)
