@@ -11,6 +11,17 @@ export default [
       parser: tsParser,
       globals: {
         process: 'readonly',
+        document: 'readonly',
+        window: 'readonly',
+        navigator: 'readonly',
+        HTMLElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLSelectElement: 'readonly',
+        HTMLButtonElement: 'readonly',
+        CustomEvent: 'readonly',
+        EventListener: 'readonly',
+        setTimeout: 'readonly',
+        requestAnimationFrame: 'readonly',
       },
       parserOptions: {
         project: true,
