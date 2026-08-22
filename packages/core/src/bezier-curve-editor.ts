@@ -20,6 +20,7 @@ import { PointerController } from './interactions/pointer-controller.js'
 import { KeyboardController } from './interactions/keyboard-controller.js'
 import { emitChange, emitCopy, emitPresetChange } from './utils/events.js'
 import { handleAriaLabel } from './utils/a11y.js'
+import { getPresetGroups } from './presets/registry.js'
 
 const VB = 100
 /** Extra viewBox margin (in curve units) added around the [0,1]² area. */
@@ -230,6 +231,112 @@ export class BezierCurveEditor extends LitElement {
     .copy-btn:active {
       opacity: 0.7;
     }
+    /* ─── Preset picker ─────────────────────────────────────────────────── */
+    .preset-picker {
+      font-family: var(--bce-font-family, ui-monospace, monospace);
+      font-size: var(--bce-font-size, 0.75rem);
+      color: var(--bce-fg, #1a1a1a);
+      background: var(--bce-bg, #ffffff);
+      border: 1px solid var(--bce-border, #e0e0e0);
+      border-radius: calc(var(--bce-radius, 8px) - 2px);
+      cursor: pointer;
+      max-width: 140px;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .preset-picker:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .picker-arrow {
+      margin-inline-start: 6px;
+      opacity: 0.6;
+      font-size: 0.7em;
+    }
+
+    /* Progressive enhancement: fully stylable dropdown where supported.
+       Browsers without base-select render the plain native select. */
+    @supports (appearance: base-select) {
+      .preset-picker,
+      .preset-picker ::picker(select) {
+        appearance: base-select;
+      }
+      .preset-picker {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 2px 8px;
+      }
+      .picker-button {
+        all: unset;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        min-width: 0;
+      }
+      .picker-selected {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        min-width: 0;
+        overflow: hidden;
+      }
+      .preset-picker::picker(select) {
+        border: 1px solid var(--bce-border, #e0e0e0);
+        border-radius: var(--bce-radius, 8px);
+        background: var(--bce-bg, #ffffff);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+        padding: 4px;
+        max-block-size: 320px;
+      }
+      .preset-picker optgroup::picker(select) {
+        border: none;
+        padding: 2px 0;
+      }
+      .preset-picker option,
+      .preset-picker optgroup::picker(select) {
+        color: var(--bce-fg, #1a1a1a);
+      }
+      .preset-picker option {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 5px 8px;
+        border-radius: calc(var(--bce-radius, 8px) - 3px);
+        min-height: 18px;
+      }
+      .preset-picker option:checked,
+      .preset-picker option:hover,
+      .preset-picker option:focus-visible {
+        background: color-mix(in srgb, var(--bce-accent, #4f6ef7) 12%, transparent);
+      }
+      .preset-thumb {
+        width: 24px;
+        height: 16px;
+        flex-shrink: 0;
+        overflow: visible;
+      }
+      .preset-thumb .thumb-curve {
+        fill: none;
+        stroke: var(--bce-accent, #4f6ef7);
+        stroke-width: 1.8;
+        stroke-linecap: round;
+      }
+      .preset-thumb .thumb-frame {
+        stroke: var(--bce-border, #e0e0e0);
+        stroke-width: 1;
+        fill: none;
+      }
+      .preset-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      /* The "Custom" placeholder has no thumb */
+      .picker-custom-option {
+        font-style: italic;
+        opacity: 0.75;
+      }
+    }
   `
 
   // ─── Public properties ────────────────────────────────────────────────────
@@ -251,6 +358,7 @@ export class BezierCurveEditor extends LitElement {
   @property({ type: Boolean, reflect: true }) readonly = false
   @property({ type: Boolean, reflect: true }) disabled = false
   @property({ type: Boolean }) showGrid = true
+  @property({ type: Boolean, attribute: 'preset-picker' }) showPresetPicker = false
   @property({ type: Boolean }) showPreview = true
   @property({ type: Number }) precision = 4
   /** Number of grid subdivisions per axis. */
@@ -363,6 +471,14 @@ export class BezierCurveEditor extends LitElement {
       dirty = true
     }
     if (dirty) this.requestUpdate()
+    // Keep the preset picker in sync with state. Setting the value attribute/
+    // ?selected binding is not enough: once an option has been selected via
+    // the DOM, its dirtiness flag wins over later `selected` attributes.
+    const picker = this.renderRoot?.querySelector<HTMLSelectElement>('.preset-picker')
+    if (picker) {
+      const expected = this._state.selectedPreset ?? ''
+      if (picker.value !== expected) picker.value = expected
+    }
   }
 
   // ─── Public API ───────────────────────────────────────────────────────────
@@ -531,6 +647,85 @@ export class BezierCurveEditor extends LitElement {
     `
   }
 
+  // ─── Preset picker ────────────────────────────────────────────────────────
+
+  /**
+   * Mini curve path for the picker preview. Same geometry as the main canvas
+   * (y flipped), scaled to a small box with padding so overshooting control
+   * points stay visible.
+   */
+  private _miniCurvePath(value: CubicBezierObject): string {
+    const w = 24
+    const h = 16
+    const pad = 3
+    // Map bezier [0..1]² into the padded box; allow y outside [0,1] to draw
+    // beyond the box (clipped by the svg viewBox of the preview).
+    const px = (x: number) => pad + x * (w - pad * 2)
+    const py = (y: number) => h - pad - y * (h - pad * 2)
+    return `M ${px(0)} ${py(0)} C ${px(value.x1)} ${py(value.y1)}, ${px(value.x2)} ${py(value.y2)}, ${px(1)} ${py(1)}`
+  }
+
+  private _renderPresetPicker(): unknown {
+    if (!this.showPresetPicker || this._state.disabled) return null
+    const selected = this._state.selectedPreset ?? ''
+    const readonly = this._state.readonly
+
+    // NOTE: html`` not svg`` — optgroup/option must be HTML elements or the
+    // select won't treat them as listed options (they'd vanish from
+    // select.options entirely). Only the inner preview <svg> is real SVG.
+    const groups = getPresetGroups().map(
+      (group) => html`
+        <optgroup label=${group.label}>
+          ${group.presets.map(
+            (p) => html`
+              <option value=${p.id} ?selected=${selected === p.id} title=${p.description}>
+                <svg class="preset-thumb" viewBox="-1 -5 26 26" aria-hidden="true">
+                  <path class="thumb-frame" d="M 0 16 L 24 16 M 0 16 L 0 -4 M 24 16 L 24 0" />
+                  <path
+                    class="thumb-curve"
+                    d=${this._miniCurvePath({
+                      x1: p.value[0],
+                      y1: p.value[1],
+                      x2: p.value[2],
+                      y2: p.value[3],
+                    })}
+                  />
+                </svg>
+                <span class="preset-label">${p.label}</span>
+              </option>
+            `,
+          )}
+        </optgroup>
+      `,
+    )
+
+    return html`
+      <select
+        part="preset-picker"
+        class="preset-picker"
+        aria-label="Preset"
+        ?disabled=${readonly}
+        @change=${this._onPresetPick}
+      >
+        <button class="picker-button">
+          <selectedcontent class="picker-selected"></selectedcontent>
+          <span class="picker-arrow" aria-hidden="true">▾</span>
+        </button>
+        <option value="" ?selected=${selected === ''} class="picker-custom-option">Custom</option>
+        ${groups}
+      </select>
+    `
+  }
+
+  private _onPresetPick = (e: Event): void => {
+    const select = e.target as HTMLSelectElement
+    const id = select.value
+    if (!id) return // "Custom" placeholder — value stays as-is
+    this.selectPreset(id)
+    // Reflect back: selectPreset may have been a no-op (unknown id)
+    select.value = this._state.selectedPreset ?? ''
+  }
+
   // ─── Render ───────────────────────────────────────────────────────────────
 
   override render() {
@@ -552,6 +747,7 @@ export class BezierCurveEditor extends LitElement {
         </div>
         <div part="toolbar" class="toolbar">
           <span part="value-output" class="value-output" title=${cssVal}>${cssVal}</span>
+          ${this._renderPresetPicker()}
           <button
             part="button"
             class="copy-btn"

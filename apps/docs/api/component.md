@@ -12,21 +12,22 @@ import '@bezier-curve-editor/core'
 
 ## Properties
 
-| Property           | Attribute           | Type                          | Default                            | Description                                                   |
-| ------------------ | ------------------- | ----------------------------- | ---------------------------------- | ------------------------------------------------------------- |
-| `value`            | `value`             | `BezierValue`                 | `cubic-bezier(0.25, 0.1, 0.25, 1)` | Current bezier value. Accepts tuple, object, or CSS string    |
-| `presets`          | —                   | `PresetDefinition[]`          | built-ins (45 presets)             | Preset catalog passed as property                             |
-| `selectedPreset`   | —                   | `string \| null`              | `null`                             | Active preset ID                                              |
-| `overshoot`        | `overshoot`         | `boolean`                     | `false`                            | Allow Y control points outside [0, 1]                         |
-| `bounds`           | —                   | `BoundsConfig`                | `'css'`                            | Clamping mode: `'css'`, `'free'`, or `CustomBounds`           |
-| `readonly`         | `readonly`          | `boolean`                     | `false`                            | Prevent editing, handles still visible                        |
-| `disabled`         | `disabled`          | `boolean`                     | `false`                            | Fully disable — pointer-events off, opacity reduced           |
-| `theme`            | `theme`             | `'auto' \| 'light' \| 'dark'` | `'auto'`                           | Color theme. `auto` follows `prefers-color-scheme`            |
-| `showGrid`         | —                   | `boolean`                     | `true`                             | Render grid lines and diagonal reference                      |
-| `gridSubdivisions` | `grid-subdivisions` | `number`                      | `4`                                | Grid subdivisions per axis                                    |
-| `showPreview`      | —                   | `boolean`                     | `true`                             | Render a dot travelling the curve (progress preview)          |
-| `snap`             | —                   | `number \| SnapConfig`        | `0`                                | Snap grid size for pointer and keyboard input. `0` = disabled |
-| `precision`        | —                   | `number`                      | `4`                                | Decimal places in CSS output                                  |
+| Property           | Attribute           | Type                          | Default                            | Description                                                                                                        |
+| ------------------ | ------------------- | ----------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `value`            | `value`             | `BezierValue`                 | `cubic-bezier(0.25, 0.1, 0.25, 1)` | Current bezier value. Accepts tuple, object, or CSS string                                                         |
+| `presets`          | —                   | `PresetDefinition[]`          | built-ins (45 presets)             | Preset catalog passed as property                                                                                  |
+| `selectedPreset`   | —                   | `string \| null`              | `null`                             | Active preset ID                                                                                                   |
+| `overshoot`        | `overshoot`         | `boolean`                     | `false`                            | Allow Y control points outside [0, 1]                                                                              |
+| `bounds`           | —                   | `BoundsConfig`                | `'css'`                            | Clamping mode: `'css'`, `'free'`, or `CustomBounds`                                                                |
+| `readonly`         | `readonly`          | `boolean`                     | `false`                            | Prevent editing, handles still visible                                                                             |
+| `disabled`         | `disabled`          | `boolean`                     | `false`                            | Fully disable — pointer-events off, opacity reduced                                                                |
+| `theme`            | `theme`             | `'auto' \| 'light' \| 'dark'` | `'auto'`                           | Color theme. `auto` follows `prefers-color-scheme`                                                                 |
+| `showGrid`         | —                   | `boolean`                     | `true`                             | Render grid lines and diagonal reference                                                                           |
+| `gridSubdivisions` | `grid-subdivisions` | `number`                      | `4`                                | Grid subdivisions per axis                                                                                         |
+| `showPreview`      | —                   | `boolean`                     | `true`                             | Render a dot travelling the curve (progress preview)                                                               |
+| `showPresetPicker` | `preset-picker`     | `boolean`                     | `false`                            | Render a grouped preset dropdown (with curve previews where `appearance: base-select` is supported) in the toolbar |
+| `snap`             | —                   | `number \| SnapConfig`        | `0`                                | Snap grid size for pointer and keyboard input. `0` = disabled                                                      |
+| `precision`        | —                   | `number`                      | `4`                                | Decimal places in CSS output                                                                                       |
 
 ## Methods
 
