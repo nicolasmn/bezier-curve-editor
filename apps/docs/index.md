@@ -13,7 +13,7 @@ hero:
       link: /guide/getting-started
     - theme: alt
       text: Live Demo →
-      link: /demo/
+      link: /demo
     - theme: alt
       text: GitHub
       link: https://github.com/nicolasmn/bezier-curve-editor
@@ -43,7 +43,7 @@ features:
   </div>
   <div class="home-demo-side">
     <p class="home-hint">Live component — drag the handles or use arrow keys.</p>
-    <a class="home-more" href="/demo/">All features in the Live Demo →</a>
+    <a class="home-more" href="/demo">All features in the Live Demo →</a>
   </div>
 </div>
 
