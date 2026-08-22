@@ -1,0 +1,60 @@
+name: Component tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  component-tests:
+    name: ${{ matrix.browser }} element tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, webkit]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @bezier-curve-editor/core exec playwright install --with-deps chromium webkit
+
+      - name: Run element tests (${{ matrix.browser }})
+        run: pnpm --filter @bezier-curve-editor/core exec vitest run -c vitest.config.ts
+        working-directory: packages/core
+        env:
+          BROWSER_TESTS: '1'
+          BROWSER: ${{ matrix.browser }}
+
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-screenshots-${{ matrix.browser }}
+          path: packages/core/src/__tests__/__screenshots__/
+          if-no-files-found: ignore

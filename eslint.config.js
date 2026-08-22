@@ -18,8 +18,13 @@ export default [
         HTMLInputElement: 'readonly',
         HTMLSelectElement: 'readonly',
         HTMLButtonElement: 'readonly',
+        SVGGraphicsElement: 'readonly',
+        KeyboardEvent: 'readonly',
+        PointerEvent: 'readonly',
         CustomEvent: 'readonly',
         EventListener: 'readonly',
+        customElements: 'readonly',
+        getComputedStyle: 'readonly',
         setTimeout: 'readonly',
         requestAnimationFrame: 'readonly',
       },
@@ -45,6 +50,8 @@ export default [
       '**/.vitepress/cache/**',
       '**/*.cjs',
       'eslint.config.js',
+      // Test runner configs are outside their package's tsconfig project
+      '**/vitest*.config.ts',
     ],
   },
 ]
