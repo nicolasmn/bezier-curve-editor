@@ -718,7 +718,7 @@
                 "text": "CustomEvent<{cssValue: string}>"
               },
               "description": "The copy button wrote the CSS value to the clipboard.",
-              "name": "copy"
+              "name": "bce-copy"
             },
             {
               "type": {
