@@ -293,3 +293,48 @@ describe('keyboard interaction', () => {
     expect(el.value.x1).toBeGreaterThan(before)
   })
 })
+
+describe('preview dot', () => {
+  it('travels the diagonal with eased progress', async () => {
+    const el = await mount()
+    el.value = { x1: 0, y1: 0, x2: 1, y2: 1 } // linear
+    await nextFrame()
+    const motion = svgOf(el).querySelector('animateMotion')!
+    expect(motion).toBeTruthy()
+    // path is the straight reference diagonal, not the curve
+    expect(motion.getAttribute('path')).toMatch(/^M 0 \d+(\.\d+)? L \d+(\.\d+)? 0$/)
+    const keyTimes = motion.getAttribute('keyTimes')!.split(';')
+    const keyPoints = motion.getAttribute('keyPoints')!.split(';')
+    expect(keyTimes.length).toBe(keyPoints.length)
+    expect(parseFloat(keyTimes[0]!)).toBe(0)
+    expect(parseFloat(keyTimes[keyTimes.length - 1]!)).toBe(1)
+    // for the identity easing (linear), position must equal time
+    keyPoints.forEach((p, i) => {
+      expect(Math.abs(parseFloat(p) - parseFloat(keyTimes[i]!))).toBeLessThan(0.02)
+    })
+  })
+
+  it('clamps overshoot progress into [0,1]', async () => {
+    const el = await mount()
+    el.value = { x1: 0.34, y1: 1.56, x2: 0.64, y2: 1 } // back-out-like overshoot
+    await nextFrame()
+    const keyPoints = svgOf(el)
+      .querySelector('animateMotion')!
+      .getAttribute('keyPoints')!
+      .split(';')
+      .map(Number)
+    for (const p of keyPoints) {
+      expect(p).toBeGreaterThanOrEqual(0)
+      expect(p).toBeLessThanOrEqual(1)
+    }
+    // back-out overshoots: at least one sample should sit at the clamp
+    expect(keyPoints.some((p) => p === 1)).toBe(true)
+  })
+
+  it('is not rendered when showPreview is false', async () => {
+    const el = await mount()
+    el.showPreview = false
+    await nextFrame()
+    expect(svgOf(el).querySelector('.preview-dot')).toBeNull()
+  })
+})
