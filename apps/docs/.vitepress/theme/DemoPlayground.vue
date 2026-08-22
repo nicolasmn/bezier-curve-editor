@@ -156,8 +156,7 @@ onMounted(async () => {
   await import('@bezier-curve-editor/core')
   await customElements.whenDefined('bezier-curve-editor')
 
-  // Pick a random preset on load (no rotation)
-  const pick = PRESETS[Math.floor(Math.random() * PRESETS.length)]
-  applyPreset(pick)
+  // Start from the CSS default (ease); no random pick here — that's the home page's job
+  syncOutput()
 })
 </script>
