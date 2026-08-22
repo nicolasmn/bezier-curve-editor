@@ -110,34 +110,36 @@ jobs:
 
       - name: Deploy preview
         if: steps.resolve.outputs.action == 'deploy'
-        working-directory: publish
         run: |
-          mkdir -p "pr-preview/pr-${PR_NUMBER}"
-          rsync -a --delete ../apps/docs/.vitepress/dist/ "pr-preview/pr-${PR_NUMBER}/"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --cached --quiet; then
+          set -euo pipefail
+          mkdir -p "publish/pr-preview/pr-${PR_NUMBER}"
+          rsync -a --delete apps/docs/.vitepress/dist/ "publish/pr-preview/pr-${PR_NUMBER}/"
+          git -C publish config user.name "github-actions[bot]"
+          git -C publish config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C publish add -A
+          if git -C publish diff --cached --quiet; then
             echo "Preview unchanged"
             exit 0
           fi
-          git commit -m "Deploy preview pr-${PR_NUMBER} (${GITHUB_SHA})"
-          git push
+          # --no-verify: generated site bundles must not run through the
+          # husky/lint-staged hooks (they lint source, not dist output)
+          git -C publish commit --no-verify -m "Deploy preview pr-${PR_NUMBER} (${GITHUB_SHA})"
+          git -C publish push
 
       - name: Remove preview
         if: steps.resolve.outputs.action == 'remove'
-        working-directory: publish
         run: |
-          rm -rf "pr-preview/pr-${PR_NUMBER}"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --cached --quiet; then
+          set -euo pipefail
+          rm -rf "publish/pr-preview/pr-${PR_NUMBER}"
+          git -C publish config user.name "github-actions[bot]"
+          git -C publish config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C publish add -A
+          if git -C publish diff --cached --quiet; then
             echo "Nothing to remove"
             exit 0
           fi
-          git commit -m "Remove preview pr-${PR_NUMBER}"
-          git push
+          git -C publish commit --no-verify -m "Remove preview pr-${PR_NUMBER}"
+          git -C publish push
 
       - name: Comment preview URL on PR
         if: steps.resolve.outputs.action == 'deploy'
