@@ -45,14 +45,6 @@ jobs:
         env:
           VITE_BASE: /bezier-curve-editor/
 
-      - name: Build demo
-        run: pnpm --filter @bezier-curve-editor/demo build
-        env:
-          VITE_BASE: /bezier-curve-editor/
-
-      - name: Copy demo into docs output
-        run: cp -r apps/demo/dist apps/docs/.vitepress/dist/demo
-
       - name: Checkout gh-pages branch
         uses: actions/checkout@v4
         with:

@@ -90,16 +90,6 @@ jobs:
         env:
           VITE_BASE: /bezier-curve-editor/pr-preview/pr-${{ env.PR_NUMBER }}/
 
-      - name: Build demo
-        if: steps.resolve.outputs.action == 'deploy'
-        run: pnpm --filter @bezier-curve-editor/demo build
-        env:
-          VITE_BASE: /bezier-curve-editor/pr-preview/pr-${{ env.PR_NUMBER }}/
-
-      - name: Copy demo into docs output
-        if: steps.resolve.outputs.action == 'deploy'
-        run: cp -r apps/demo/dist apps/docs/.vitepress/dist/demo
-
       # --- Publish ---------------------------------------------------------
 
       - name: Checkout gh-pages branch
