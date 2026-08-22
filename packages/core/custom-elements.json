@@ -1,0 +1,2125 @@
+{
+  "schemaVersion": "1.0.0",
+  "readme": "",
+  "modules": [
+    {
+      "kind": "javascript-module",
+      "path": "dist/index.js",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "y",
+          "parameters": [
+            {
+              "name": "e"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "g",
+          "parameters": [
+            {
+              "name": "e"
+            },
+            {
+              "name": "t",
+              "default": "4"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "ae",
+          "parameters": [
+            {
+              "name": "e"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "p",
+          "parameters": [
+            {
+              "name": "e"
+            },
+            {
+              "name": "t"
+            },
+            {
+              "name": "r"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "_",
+          "parameters": [
+            {
+              "name": "e"
+            },
+            {
+              "name": "t"
+            },
+            {
+              "name": "r"
+            },
+            {
+              "name": "s"
+            },
+            {
+              "name": "n"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "ce",
+          "parameters": [
+            {
+              "name": "e"
+            },
+            {
+              "name": "t",
+              "default": "60"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "V",
+          "parameters": [
+            {
+              "name": "e"
+            }
+          ]
+        },
+        {
+          "kind": "variable",
+          "name": "$",
+          "type": {
+            "text": "object"
+          },
+          "default": "{ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 }"
+        },
+        {
+          "kind": "variable",
+          "name": "a",
+          "default": "class extends F { constructor() { super(...arguments), this._theme = \"auto\", this.overshoot = !1, this.readonly = !1, this.disabled = !1, this.showGrid = !0, this.showPreview = !0, this.precision = 4, this.gridSubdivisions = se, this._state = q(), this._pointer = new W(this), this._keyboard = new X(this), this._copy = async () => { const e = this.getCssValue(); try { await globalThis.navigator.clipboard.writeText(e); } catch { } ee(this, e); }; } get theme() { return this._theme; } set theme(e) { const t = this._theme; this._theme = e, e === \"auto\" ? this.removeAttribute(\"theme\") : this.setAttribute(\"theme\", e), this.requestUpdate(\"theme\", t); } get snap() { const e = this._state.snap; return typeof e == \"number\" ? e : e.enabled ? e.gridSize : 0; } set snap(e) { this._state = { ...this._state, snap: Math.max(0, e) }, this.requestUpdate(\"snap\", void 0); } get presets() { return this._state.presets; } set presets(e) { this._state = { ...this._state, presets: e }, this.requestUpdate(\"presets\", void 0); } get selectedPreset() { return this._state.selectedPreset; } set selectedPreset(e) { if (e === null) { this._state = { ...this._state, selectedPreset: null }, this.requestUpdate(\"selectedPreset\", void 0); return; } this.selectPreset(e); } set value(e) { try { const t = y(e), r = R(this._state, t); if (r === this._state) return; this._state = { ...r, initialValue: t }; } catch { this.dispatchEvent(new CustomEvent(\"invalid\", { bubbles: !0, composed: !0 })); } } get value() { return this._state.value; } set bounds(e) { this._state = G(this._state, e); } get bounds() { return this._state.bounds; } // ─── Controller host interface ──────────────────────────────────────────── get state() { return this._state; } onStateChange(e, t) { this._state = e, t && Q(this, e.value, e.selectedPreset, t, this.precision), this.requestUpdate(); } getSvgElement() { return this.renderRoot.querySelector(\"svg\"); } // ─── Lifecycle ──────────────────────────────────────────────────────────── firstUpdated() { const e = this.getSvgElement(); e && this._pointer.attach(e), this._keyboard.attach(this), this.setAttribute(\"role\", \"group\"), this.setAttribute(\"aria-label\", \"Bezier curve editor\"); } updated(e) { let t = !1; e.has(\"overshoot\") && (this._state = J(this._state, this.overshoot), t = !0), e.has(\"readonly\") && (this._state = { ...this._state, readonly: this.readonly }, t = !0), e.has(\"disabled\") && (this._state = { ...this._state, disabled: this.disabled }, t = !0), t && this.requestUpdate(); } // ─── Public API ─────────────────────────────────────────────────────────── getValue() { return this._state.value; } getCssValue() { return g(this._state.value, this.precision); } setValue(e) { if (this._state.readonly || this._state.disabled) return; const t = y(e); this._state = { ...this._state, value: t, initialValue: t, selectedPreset: null }, this.requestUpdate(); } /** * Select a preset by id. No-ops if id not found in current preset catalog. * Emits `presetchange` on success. */ selectPreset(e) { const t = this._state.presets.find((r) => r.id === e); t && (this._state = I(this._state, t), this.overshoot !== this._state.overshoot && (this.overshoot = this._state.overshoot), Z(this, t, this._state.value), this.requestUpdate()); } reset() { this._state = j(this._state), this.requestUpdate(); } focus() { super.focus(); } // ─── Render helpers ─────────────────────────────────────────────────────── /** * Fixed viewBox: the [0,1]² curve area plus a constant gutter (BASE_PAD). * The editor NEVER rescales — its size and zoom level stay constant at all * times. Handles pulled outside the curve area simply render outside the * canvas (svg overflow: visible) instead of forcing a zoom-out. */ _viewBox() { return { min: -z, size: i + z * 2 }; } _renderGrid() { if (!this.showGrid) return null; const e = [], t = this.gridSubdivisions; for (let r = 1; r < t; r++) { const s = r / t * i; e.push(h` <line class=\"grid-line\" x1=${s} y1=\"0\" x2=${s} y2=${i} /> <line class=\"grid-line\" x1=\"0\" y1=${s} x2=${i} y2=${s} /> `); } return h` ${e} <line class=\"grid-diagonal\" x1=\"0\" y1=${i} x2=${i} y2=\"0\" /> `; } _renderCurve(e) { const t = e.x1 * i, r = (1 - e.y1) * i, s = e.x2 * i, n = (1 - e.y2) * i; return h` <path part=\"curve\" class=\"curve-path\" d=\"M 0 ${i} C ${t} ${r}, ${s} ${n}, ${i} 0\" /> `; } /** * A dot travelling along the curve (progress preview). Pure SVG — the * animation runs via CSS offset-path on the same path data as the curve. */ _renderPreview(e) { if (!this.showPreview) return null; const t = e.x1 * i, r = (1 - e.y1) * i, s = e.x2 * i, n = (1 - e.y2) * i, o = `M 0 ${i} C ${t} ${r}, ${s} ${n}, ${i} 0`; return h` <circle class=\"preview-dot\" r=\"3\"> <animateMotion dur=\"1.6s\" repeatCount=\"indefinite\" path=${o} /> </circle> `; } _renderHandles(e) { const t = e.x1 * i, r = (1 - e.y1) * i, s = e.x2 * i, n = (1 - e.y2) * i, { focusedHandle: o } = this._state; return h` <line class=\"handle-line\" x1=\"0\" y1=${i} x2=${t} y2=${r} /> <line class=\"handle-line\" x1=${i} y1=\"0\" x2=${s} y2=${n} /> <g part=\"handle handle-p1\" class=\"handle ${o === \"p1\" ? \"handle--focused\" : \"\"}\" data-handle=\"p1\" tabindex=\"0\" role=\"slider\" aria-label=${k(\"p1\", e.x1, e.y1)} aria-valuemin=\"0\" aria-valuemax=\"1\" aria-valuenow=\"${e.x1.toFixed(4)}\" aria-valuetext=\"x ${e.x1.toFixed(4)}, y ${e.y1.toFixed(4)}\"> <circle cx=${t} cy=${r} r=\"5\" /> </g> <g part=\"handle handle-p2\" class=\"handle ${o === \"p2\" ? \"handle--focused\" : \"\"}\" data-handle=\"p2\" tabindex=\"0\" role=\"slider\" aria-label=${k(\"p2\", e.x2, e.y2)} aria-valuemin=\"0\" aria-valuemax=\"1\" aria-valuenow=\"${e.x2.toFixed(4)}\" aria-valuetext=\"x ${e.x2.toFixed(4)}, y ${e.y2.toFixed(4)}\"> <circle cx=${s} cy=${n} r=\"5\" /> </g> `; } // ─── Render ─────────────────────────────────────────────────────────────── render() { const e = this._state.value, t = g(e, this.precision), r = this._viewBox(); return U` <div part=\"container\" class=\"container\"> <div class=\"canvas-wrap\"> <svg part=\"grid\" viewBox=\"${r.min} ${r.min} ${r.size} ${r.size}\" aria-hidden=\"true\" focusable=\"false\" > ${this._renderGrid()} ${this._renderCurve(e)} ${this._renderPreview(e)} ${this._renderHandles(e)} </svg> </div> <div part=\"toolbar\" class=\"toolbar\"> <span part=\"value-output\" class=\"value-output\" title=${t}>${t}</span> <button part=\"button\" class=\"copy-btn\" type=\"button\" aria-label=\"Copy CSS value\" @click=${this._copy} > Copy </button> </div> </div> `; } }"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "BezierCurveEditor",
+          "declaration": {
+            "name": "a",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "DEFAULT_VALUE",
+          "declaration": {
+            "name": "$",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "PRESETS",
+          "declaration": {
+            "name": "H",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "buildCurvePoints",
+          "declaration": {
+            "name": "ce",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "clampPoint",
+          "declaration": {
+            "name": "p",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getPreset",
+          "declaration": {
+            "name": "de",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getPresetsByCategory",
+          "declaration": {
+            "name": "he",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "isOvershoot",
+          "declaration": {
+            "name": "V",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "parseBezierValue",
+          "declaration": {
+            "name": "y",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "sampleCurve1D",
+          "declaration": {
+            "name": "_",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "searchPresets",
+          "declaration": {
+            "name": "pe",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "serializeToCss",
+          "declaration": {
+            "name": "g",
+            "module": "dist/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "toTuple",
+          "declaration": {
+            "name": "ae",
+            "module": "dist/index.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "dist/presets.js",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "i",
+          "type": {
+            "text": "array"
+          },
+          "default": "[ // ─── Standard CSS ─────────────────────────────────────────── { id: \"linear\", label: \"Linear\", category: \"standard\", value: [0, 0, 1, 1], description: \"Constant speed, no easing.\", tags: [\"css\", \"basic\"] }, { id: \"ease\", label: \"Ease\", category: \"standard\", value: [0.25, 0.1, 0.25, 1], description: \"Browser default ease. Starts fast, ends slow.\", tags: [\"css\", \"basic\"] }, { id: \"ease-in\", label: \"Ease In\", category: \"standard\", value: [0.42, 0, 1, 1], description: \"Starts slow, ends fast.\", tags: [\"css\", \"basic\"] }, { id: \"ease-out\", label: \"Ease Out\", category: \"standard\", value: [0, 0, 0.58, 1], description: \"Starts fast, ends slow.\", tags: [\"css\", \"basic\"] }, { id: \"ease-in-out\", label: \"Ease In Out\", category: \"standard\", value: [0.42, 0, 0.58, 1], description: \"Slow at both ends.\", tags: [\"css\", \"basic\"] }, // ─── Sine ─────────────────────────────────────────────────── { id: \"sine-in\", label: \"Sine In\", category: \"sine\", value: [0.12, 0, 0.39, 0], description: \"Gentle acceleration using sine curve.\", tags: [\"smooth\"] }, { id: \"sine-out\", label: \"Sine Out\", category: \"sine\", value: [0.61, 1, 0.88, 1], description: \"Gentle deceleration using sine curve.\", tags: [\"smooth\"] }, { id: \"sine-in-out\", label: \"Sine In Out\", category: \"sine\", value: [0.37, 0, 0.63, 1], description: \"Smooth acceleration and deceleration.\", tags: [\"smooth\"] }, // ─── Quad ─────────────────────────────────────────────────── { id: \"quad-in\", label: \"Quad In\", category: \"quad\", value: [0.11, 0, 0.5, 0], description: \"Quadratic acceleration.\", tags: [\"power\"] }, { id: \"quad-out\", label: \"Quad Out\", category: \"quad\", value: [0.5, 1, 0.89, 1], description: \"Quadratic deceleration.\", tags: [\"power\"] }, { id: \"quad-in-out\", label: \"Quad In Out\", category: \"quad\", value: [0.45, 0, 0.55, 1], description: \"Symmetric quadratic easing.\", tags: [\"power\"] }, // ─── Cubic ────────────────────────────────────────────────── { id: \"cubic-in\", label: \"Cubic In\", category: \"cubic\", value: [0.32, 0, 0.67, 0], description: \"Cubic acceleration.\", tags: [\"power\"] }, { id: \"cubic-out\", label: \"Cubic Out\", category: \"cubic\", value: [0.33, 1, 0.68, 1], description: \"Cubic deceleration.\", tags: [\"power\"] }, { id: \"cubic-in-out\", label: \"Cubic In Out\", category: \"cubic\", value: [0.65, 0, 0.35, 1], description: \"Symmetric cubic easing.\", tags: [\"power\"] }, // ─── Quart ────────────────────────────────────────────────── { id: \"quart-in\", label: \"Quart In\", category: \"quart\", value: [0.5, 0, 0.75, 0], description: \"Quartic acceleration.\", tags: [\"power\"] }, { id: \"quart-out\", label: \"Quart Out\", category: \"quart\", value: [0.25, 1, 0.5, 1], description: \"Quartic deceleration.\", tags: [\"power\"] }, { id: \"quart-in-out\", label: \"Quart In Out\", category: \"quart\", value: [0.76, 0, 0.24, 1], description: \"Symmetric quartic easing.\", tags: [\"power\"] }, // ─── Quint ────────────────────────────────────────────────── { id: \"quint-in\", label: \"Quint In\", category: \"quint\", value: [0.64, 0, 0.78, 0], description: \"Quintic acceleration.\", tags: [\"power\"] }, { id: \"quint-out\", label: \"Quint Out\", category: \"quint\", value: [0.22, 1, 0.36, 1], description: \"Quintic deceleration.\", tags: [\"power\"] }, { id: \"quint-in-out\", label: \"Quint In Out\", category: \"quint\", value: [0.83, 0, 0.17, 1], description: \"Symmetric quintic easing.\", tags: [\"power\"] }, // ─── Expo ─────────────────────────────────────────────────── { id: \"expo-in\", label: \"Expo In\", category: \"expo\", value: [0.7, 0, 0.84, 0], description: \"Exponential acceleration. Very slow start.\", tags: [\"dramatic\"] }, { id: \"expo-out\", label: \"Expo Out\", category: \"expo\", value: [0.16, 1, 0.3, 1], description: \"Exponential deceleration. Very slow end.\", tags: [\"dramatic\"] }, { id: \"expo-in-out\", label: \"Expo In Out\", category: \"expo\", value: [0.87, 0, 0.13, 1], description: \"Exponential symmetric easing.\", tags: [\"dramatic\"] }, // ─── Circ ─────────────────────────────────────────────────── { id: \"circ-in\", label: \"Circ In\", category: \"circ\", value: [0.55, 0, 1, 0.45], description: \"Circular acceleration.\", tags: [\"smooth\"] }, { id: \"circ-out\", label: \"Circ Out\", category: \"circ\", value: [0, 0.55, 0.45, 1], description: \"Circular deceleration.\", tags: [\"smooth\"] }, { id: \"circ-in-out\", label: \"Circ In Out\", category: \"circ\", value: [0.85, 0, 0.15, 1], description: \"Symmetric circular easing.\", tags: [\"smooth\"] }, // ─── Back / Overshoot ──────────────────────────────────────── { id: \"back-in\", label: \"Back In\", category: \"back\", value: [0.36, 0, 0.66, -0.56], description: \"Pulls back before accelerating forward.\", tags: [\"overshoot\", \"character\"], overshootRecommended: !0 }, { id: \"back-out\", label: \"Back Out\", category: \"back\", value: [0.34, 1.56, 0.64, 1], description: \"Overshoots the target then settles.\", tags: [\"overshoot\", \"character\"], overshootRecommended: !0 }, { id: \"back-in-out\", label: \"Back In Out\", category: \"back\", value: [0.68, -0.6, 0.32, 1.6], description: \"Pulls back, overshoots, settles.\", tags: [\"overshoot\", \"character\"], overshootRecommended: !0 }, // ─── Emphasis ─────────────────────────────────────────────── { id: \"anticipate\", label: \"Anticipate\", category: \"emphasis\", value: [0.38, -0.4, 0.88, 0.65], description: \"Pulls back strongly before launching forward.\", tags: [\"character\", \"overshoot\"], overshootRecommended: !0 }, { id: \"snap\", label: \"Snap\", category: \"emphasis\", value: [0.2, 1.6, 0.6, 1], description: \"Snappy overshoot, quick settle.\", tags: [\"character\", \"overshoot\"], overshootRecommended: !0 }, { id: \"swift-out\", label: \"Swift Out\", category: \"emphasis\", value: [0.55, 0, 0.1, 1], description: \"Material Design swift-out. Fast exit, gentle settle.\", tags: [\"material\", \"ui\"] }, { id: \"soft-bounce\", label: \"Soft Bounce\", category: \"emphasis\", value: [0.34, 1.3, 0.64, 1], description: \"Light bounce at the end. Playful but subtle.\", tags: [\"character\", \"overshoot\"], overshootRecommended: !0 }, { id: \"dramatic-out\", label: \"Dramatic Out\", category: \"emphasis\", value: [0, 0.9, 0.1, 1], description: \"Explosive start, clean landing.\", tags: [\"dramatic\", \"ui\"] }, // ─── Utility ──────────────────────────────────────────────── { id: \"flat-start\", label: \"Flat Start\", category: \"utility\", value: [0, 0.5, 0.5, 1], description: \"Delayed start, smooth arrival.\", tags: [\"ui\"] }, { id: \"flat-end\", label: \"Flat End\", category: \"utility\", value: [0.5, 0, 1, 0.5], description: \"Quick launch, gradual slowdown to flat.\", tags: [\"ui\"] }, { id: \"symmetric\", label: \"Symmetric\", category: \"utility\", value: [0.5, 0, 0.5, 1], description: \"Perfectly mirrored ease in and out.\", tags: [\"balanced\"] }, { id: \"snappy-ui\", label: \"Snappy UI\", category: \"utility\", value: [0.2, 0, 0, 1], description: \"Recommended for micro-interactions and UI transitions.\", tags: [\"ui\", \"recommended\"] }, { id: \"gentle-ui\", label: \"Gentle UI\", category: \"utility\", value: [0.4, 0, 0.2, 1], description: \"Smooth and natural feel for UI elements.\", tags: [\"ui\", \"recommended\"] } ]"
+        },
+        {
+          "kind": "function",
+          "name": "r",
+          "parameters": [
+            {
+              "name": "t"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "c",
+          "parameters": [
+            {
+              "name": "t"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "s",
+          "parameters": [
+            {
+              "name": "t"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "PRESETS",
+          "declaration": {
+            "name": "i",
+            "module": "dist/presets.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getPreset",
+          "declaration": {
+            "name": "r",
+            "module": "dist/presets.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getPresetsByCategory",
+          "declaration": {
+            "name": "c",
+            "module": "dist/presets.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "searchPresets",
+          "declaration": {
+            "name": "s",
+            "module": "dist/presets.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/bezier-curve-editor.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "`<bezier-curve-editor>` — interactive cubic-bezier() easing curve editor.",
+          "name": "BezierCurveEditor",
+          "cssProperties": [
+            {
+              "description": "Canvas width/height.",
+              "name": "--bce-canvas-size",
+              "default": "240px"
+            },
+            {
+              "description": "Toolbar font family.",
+              "name": "--bce-font-family",
+              "default": "..."
+            },
+            {
+              "description": "Toolbar font size.",
+              "name": "--bce-font-size",
+              "default": "0.75rem"
+            },
+            {
+              "description": "Accent color (curve, handles, focus ring).",
+              "name": "--bce-accent",
+              "default": "#4f6ef7"
+            },
+            {
+              "description": "Curve stroke width.",
+              "name": "--bce-curve-width",
+              "default": "2"
+            },
+            {
+              "description": "Handle diameter (hover/focus radius derives from it).",
+              "name": "--bce-handle-size",
+              "default": "10px"
+            },
+            {
+              "description": "Host corner radius.",
+              "name": "--bce-radius",
+              "default": "8px"
+            }
+          ],
+          "cssParts": [
+            {
+              "description": "Outer flex container.",
+              "name": "container"
+            },
+            {
+              "description": "The svg canvas.",
+              "name": "grid"
+            },
+            {
+              "description": "The bezier path.",
+              "name": "curve"
+            },
+            {
+              "description": "A handle group (also `handle-p1` / `handle-p2`).",
+              "name": "handle"
+            },
+            {
+              "description": "Value output + copy button bar.",
+              "name": "toolbar"
+            },
+            {
+              "description": "The serialized CSS value.",
+              "name": "value-output"
+            },
+            {
+              "description": "The copy button.",
+              "name": "button"
+            }
+          ],
+          "members": [
+            {
+              "kind": "field",
+              "name": "theme",
+              "type": {
+                "text": "'auto' | 'light' | 'dark'"
+              },
+              "attribute": "theme"
+            },
+            {
+              "kind": "field",
+              "name": "_theme",
+              "type": {
+                "text": "'auto' | 'light' | 'dark'"
+              },
+              "privacy": "private",
+              "default": "'auto'"
+            },
+            {
+              "kind": "field",
+              "name": "overshoot",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "overshoot",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "readonly",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "attribute": "disabled",
+              "reflects": true
+            },
+            {
+              "kind": "field",
+              "name": "showGrid",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "attribute": "showGrid"
+            },
+            {
+              "kind": "field",
+              "name": "showPreview",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "attribute": "showPreview"
+            },
+            {
+              "kind": "field",
+              "name": "precision",
+              "type": {
+                "text": "number"
+              },
+              "default": "4",
+              "attribute": "precision"
+            },
+            {
+              "kind": "field",
+              "name": "gridSubdivisions",
+              "default": "4",
+              "description": "Number of grid subdivisions per axis.",
+              "attribute": "grid-subdivisions",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "snap",
+              "type": {
+                "text": "number"
+              },
+              "description": "Snap grid size for pointer and keyboard input. 0 disables snapping.",
+              "attribute": "snap"
+            },
+            {
+              "kind": "field",
+              "name": "presets",
+              "type": {
+                "text": "PresetDefinition[]"
+              },
+              "attribute": "presets"
+            },
+            {
+              "kind": "field",
+              "name": "selectedPreset",
+              "type": {
+                "text": "string | null"
+              },
+              "attribute": "selectedPreset"
+            },
+            {
+              "kind": "field",
+              "name": "value",
+              "type": {
+                "text": "CubicBezierObject"
+              },
+              "attribute": "value"
+            },
+            {
+              "kind": "field",
+              "name": "bounds",
+              "type": {
+                "text": "BoundsConfig"
+              },
+              "attribute": "bounds"
+            },
+            {
+              "kind": "field",
+              "name": "_state",
+              "type": {
+                "text": "EditorState"
+              },
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "_pointer",
+              "privacy": "private",
+              "default": "new PointerController(this)"
+            },
+            {
+              "kind": "field",
+              "name": "_keyboard",
+              "privacy": "private",
+              "default": "new KeyboardController(this)"
+            },
+            {
+              "kind": "field",
+              "name": "state",
+              "type": {
+                "text": "EditorState"
+              },
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "onStateChange",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "next",
+                  "type": {
+                    "text": "EditorState"
+                  }
+                },
+                {
+                  "name": "emit",
+                  "type": {
+                    "text": "'input' | 'change' | null"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "getSvgElement",
+              "return": {
+                "type": {
+                  "text": "SVGSVGElement | null"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "getValue",
+              "return": {
+                "type": {
+                  "text": "CubicBezierObject"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "getCssValue",
+              "return": {
+                "type": {
+                  "text": "string"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "setValue",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "raw",
+                  "type": {
+                    "text": "BezierValue"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "selectPreset",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "id",
+                  "type": {
+                    "text": "string"
+                  }
+                }
+              ],
+              "description": "Select a preset by id. No-ops if id not found in current preset catalog.\nEmits `presetchange` on success."
+            },
+            {
+              "kind": "method",
+              "name": "reset",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "focus",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "field",
+              "name": "_copy",
+              "privacy": "private",
+              "readonly": true
+            },
+            {
+              "kind": "method",
+              "name": "_viewBox",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "{ min: number; size: number }"
+                }
+              },
+              "description": "Fixed viewBox: the [0,1]² curve area plus a constant gutter (BASE_PAD).\nThe editor NEVER rescales — its size and zoom level stay constant at all\ntimes. Handles pulled outside the curve area simply render outside the\ncanvas (svg overflow: visible) instead of forcing a zoom-out."
+            },
+            {
+              "kind": "method",
+              "name": "_renderGrid",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "_renderCurve",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "v",
+                  "type": {
+                    "text": "CubicBezierObject"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "_renderPreview",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "unknown"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "v",
+                  "type": {
+                    "text": "CubicBezierObject"
+                  }
+                }
+              ],
+              "description": "A dot travelling along the curve (progress preview). Pure SVG — the\nanimation runs via CSS offset-path on the same path data as the curve."
+            },
+            {
+              "kind": "method",
+              "name": "_renderHandles",
+              "privacy": "private",
+              "parameters": [
+                {
+                  "name": "v",
+                  "type": {
+                    "text": "CubicBezierObject"
+                  }
+                }
+              ]
+            }
+          ],
+          "events": [
+            {
+              "type": {
+                "text": "CustomEvent<BezierChangeDetail>"
+              },
+              "description": "Live value updates during a pointer drag or keyboard nudge.",
+              "name": "input"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<BezierChangeDetail>"
+              },
+              "description": "Committed value on pointer release or keyboard key-up.",
+              "name": "change"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<BezierPresetChangeDetail>"
+              },
+              "description": "The active preset changed.",
+              "name": "presetchange"
+            },
+            {
+              "type": {
+                "text": "CustomEvent<{cssValue: string}>"
+              },
+              "description": "The copy button wrote the CSS value to the clipboard.",
+              "name": "copy"
+            },
+            {
+              "type": {
+                "text": "CustomEvent"
+              },
+              "description": "A value assignment failed to parse.",
+              "name": "invalid"
+            }
+          ],
+          "attributes": [
+            {
+              "name": "theme",
+              "type": {
+                "text": "'auto' | 'light' | 'dark'"
+              },
+              "fieldName": "theme"
+            },
+            {
+              "name": "overshoot",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "fieldName": "overshoot"
+            },
+            {
+              "name": "readonly",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "fieldName": "readonly"
+            },
+            {
+              "name": "disabled",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "false",
+              "fieldName": "disabled"
+            },
+            {
+              "name": "showGrid",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "fieldName": "showGrid"
+            },
+            {
+              "name": "showPreview",
+              "type": {
+                "text": "boolean"
+              },
+              "default": "true",
+              "fieldName": "showPreview"
+            },
+            {
+              "name": "precision",
+              "type": {
+                "text": "number"
+              },
+              "default": "4",
+              "fieldName": "precision"
+            },
+            {
+              "name": "grid-subdivisions",
+              "default": "GRID_DEFAULT",
+              "description": "Number of grid subdivisions per axis.",
+              "fieldName": "gridSubdivisions"
+            },
+            {
+              "name": "snap",
+              "type": {
+                "text": "number"
+              },
+              "description": "Snap grid size for pointer and keyboard input. 0 disables snapping.",
+              "fieldName": "snap"
+            },
+            {
+              "name": "presets",
+              "type": {
+                "text": "PresetDefinition[]"
+              },
+              "fieldName": "presets"
+            },
+            {
+              "name": "selectedPreset",
+              "type": {
+                "text": "string | null"
+              },
+              "fieldName": "selectedPreset"
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "CubicBezierObject"
+              },
+              "fieldName": "value"
+            },
+            {
+              "name": "bounds",
+              "type": {
+                "text": "BoundsConfig"
+              },
+              "fieldName": "bounds"
+            }
+          ],
+          "superclass": {
+            "name": "LitElement",
+            "package": "lit"
+          },
+          "tagName": "bezier-curve-editor",
+          "customElement": true,
+          "parts": [
+            {
+              "name": "button"
+            },
+            {
+              "name": "container"
+            },
+            {
+              "name": "curve"
+            },
+            {
+              "name": "grid"
+            },
+            {
+              "name": "handle",
+              "description": "Handle group."
+            },
+            {
+              "name": "handle-p1",
+              "description": "Handle group."
+            },
+            {
+              "name": "handle-p2",
+              "description": "Handle group."
+            },
+            {
+              "name": "toolbar"
+            },
+            {
+              "name": "value-output"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "BezierCurveEditor",
+          "declaration": {
+            "name": "BezierCurveEditor",
+            "module": "src/bezier-curve-editor.ts"
+          }
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "bezier-curve-editor",
+          "declaration": {
+            "name": "BezierCurveEditor",
+            "module": "src/bezier-curve-editor.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/index.ts",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/types/public.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/presets/index.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/math/curve.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/bezier-curve-editor.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/interactions/keyboard-controller.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "Keyboard interactions for the focused handle.\n\nFocus is owned by the DOM: each handle is focusable (tabindex=\"0\") and\n`focusedHandle` state mirrors DOM focus via focusin/focusout. Tab therefore\nmoves natively between the handles and out of the component — no focus trap.\n\nArrow keys nudge the focused handle ('input' per keydown). A 'change' is\ncommitted on keyup when at least one nudge happened, mirroring how\n<input type=\"range\"> commits on release.",
+          "name": "KeyboardController",
+          "members": [
+            {
+              "kind": "field",
+              "name": "host",
+              "type": {
+                "text": "KeyboardControllerHost"
+              },
+              "privacy": "private",
+              "default": "el"
+            },
+            {
+              "kind": "field",
+              "name": "el",
+              "type": {
+                "text": "HTMLElement | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "nudged",
+              "type": {
+                "text": "boolean"
+              },
+              "privacy": "private",
+              "default": "false"
+            },
+            {
+              "kind": "method",
+              "name": "hostConnected",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "hostDisconnected",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "attach",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "el",
+                  "type": {
+                    "text": "HTMLElement"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "method",
+              "name": "detach",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "field",
+              "name": "onFocusIn",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "onFocusOut",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "onKeyDown",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "domFocusedHandle",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "'p1' | 'p2' | null"
+                }
+              },
+              "description": "Resolve the focused handle straight from the shadow root, if any."
+            },
+            {
+              "kind": "field",
+              "name": "onKeyUp",
+              "privacy": "private"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "KeyboardController",
+          "declaration": {
+            "name": "KeyboardController",
+            "module": "src/interactions/keyboard-controller.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/interactions/pointer-controller.ts",
+      "declarations": [
+        {
+          "kind": "class",
+          "description": "",
+          "name": "PointerController",
+          "members": [
+            {
+              "kind": "field",
+              "name": "host",
+              "type": {
+                "text": "PointerControllerHost"
+              },
+              "privacy": "private",
+              "default": "host"
+            },
+            {
+              "kind": "field",
+              "name": "activeHandle",
+              "type": {
+                "text": "ActiveHandle"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "field",
+              "name": "activeSvg",
+              "type": {
+                "text": "SVGSVGElement | null"
+              },
+              "privacy": "private",
+              "default": "null"
+            },
+            {
+              "kind": "method",
+              "name": "hostConnected",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "hostDisconnected",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "attach",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "svg",
+                  "type": {
+                    "text": "SVGSVGElement"
+                  }
+                }
+              ]
+            },
+            {
+              "kind": "field",
+              "name": "onPointerDown",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "onPointerMove",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "onPointerUp",
+              "privacy": "private"
+            },
+            {
+              "kind": "field",
+              "name": "onPointerCancel",
+              "privacy": "private"
+            },
+            {
+              "kind": "method",
+              "name": "svgPoint",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "{ x: number; y: number } | null"
+                }
+              },
+              "parameters": [
+                {
+                  "name": "e",
+                  "type": {
+                    "text": "PointerEvent"
+                  }
+                }
+              ],
+              "description": "Screen → curve coordinates. Must go through the svg CTM so the viewBox\n(including its gutter) is respected — a naive linear map of the element\nbox onto [0,1]² skews the handle by up to the gutter width and breaks\ndown entirely for handles outside the canvas box."
+            },
+            {
+              "kind": "method",
+              "name": "removeListeners",
+              "privacy": "private",
+              "return": {
+                "type": {
+                  "text": "void"
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "PointerController",
+          "declaration": {
+            "name": "PointerController",
+            "module": "src/interactions/pointer-controller.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/math/curve.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "parseBezierValue",
+          "return": {
+            "type": {
+              "text": "CubicBezierObject"
+            }
+          },
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "text": "BezierValue"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "serializeToCss",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "text": "CubicBezierObject"
+              }
+            },
+            {
+              "name": "precision",
+              "default": "4"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "toTuple",
+          "return": {
+            "type": {
+              "text": "CubicBezierTuple"
+            }
+          },
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "text": "CubicBezierObject"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "clampPoint",
+          "return": {
+            "type": {
+              "text": "{ x: number; y: number }"
+            }
+          },
+          "parameters": [
+            {
+              "name": "x",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "y",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "bounds",
+              "type": {
+                "text": "BoundsConfig"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "sampleCurve1D",
+          "return": {
+            "type": {
+              "text": "number"
+            }
+          },
+          "parameters": [
+            {
+              "name": "t",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "p0",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "p1",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "p2",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "p3",
+              "type": {
+                "text": "number"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "buildCurvePoints",
+          "return": {
+            "type": {
+              "text": "Array<{ x: number; y: number }>"
+            }
+          },
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "text": "CubicBezierObject"
+              }
+            },
+            {
+              "name": "steps",
+              "default": "60"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "isOvershoot",
+          "return": {
+            "type": {
+              "text": "boolean"
+            }
+          },
+          "parameters": [
+            {
+              "name": "value",
+              "type": {
+                "text": "CubicBezierObject"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "variable",
+          "name": "DEFAULT_VALUE",
+          "type": {
+            "text": "CubicBezierObject"
+          },
+          "default": "{ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 }",
+          "description": "CSS `ease` = cubic-bezier(0.25, 0.1, 0.25, 1)"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "parseBezierValue",
+          "declaration": {
+            "name": "parseBezierValue",
+            "module": "src/math/curve.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "serializeToCss",
+          "declaration": {
+            "name": "serializeToCss",
+            "module": "src/math/curve.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "toTuple",
+          "declaration": {
+            "name": "toTuple",
+            "module": "src/math/curve.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "clampPoint",
+          "declaration": {
+            "name": "clampPoint",
+            "module": "src/math/curve.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "sampleCurve1D",
+          "declaration": {
+            "name": "sampleCurve1D",
+            "module": "src/math/curve.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "buildCurvePoints",
+          "declaration": {
+            "name": "buildCurvePoints",
+            "module": "src/math/curve.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "isOvershoot",
+          "declaration": {
+            "name": "isOvershoot",
+            "module": "src/math/curve.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "DEFAULT_VALUE",
+          "declaration": {
+            "name": "DEFAULT_VALUE",
+            "module": "src/math/curve.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/presets/index.ts",
+      "declarations": [],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "PRESETS",
+          "declaration": {
+            "name": "PRESETS",
+            "module": "./registry.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getPreset",
+          "declaration": {
+            "name": "getPreset",
+            "module": "./registry.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getPresetsByCategory",
+          "declaration": {
+            "name": "getPresetsByCategory",
+            "module": "./registry.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "searchPresets",
+          "declaration": {
+            "name": "searchPresets",
+            "module": "./registry.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "*",
+          "declaration": {
+            "name": "*",
+            "module": "src/types/public.js"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/presets/registry.ts",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "PRESETS",
+          "type": {
+            "text": "PresetDefinition[]"
+          },
+          "default": "[ // ─── Standard CSS ─────────────────────────────────────────── { id: 'linear', label: 'Linear', category: 'standard', value: [0, 0, 1, 1], description: 'Constant speed, no easing.', tags: ['css', 'basic'], }, { id: 'ease', label: 'Ease', category: 'standard', value: [0.25, 0.1, 0.25, 1], description: 'Browser default ease. Starts fast, ends slow.', tags: ['css', 'basic'], }, { id: 'ease-in', label: 'Ease In', category: 'standard', value: [0.42, 0, 1, 1], description: 'Starts slow, ends fast.', tags: ['css', 'basic'], }, { id: 'ease-out', label: 'Ease Out', category: 'standard', value: [0, 0, 0.58, 1], description: 'Starts fast, ends slow.', tags: ['css', 'basic'], }, { id: 'ease-in-out', label: 'Ease In Out', category: 'standard', value: [0.42, 0, 0.58, 1], description: 'Slow at both ends.', tags: ['css', 'basic'], }, // ─── Sine ─────────────────────────────────────────────────── { id: 'sine-in', label: 'Sine In', category: 'sine', value: [0.12, 0, 0.39, 0], description: 'Gentle acceleration using sine curve.', tags: ['smooth'], }, { id: 'sine-out', label: 'Sine Out', category: 'sine', value: [0.61, 1, 0.88, 1], description: 'Gentle deceleration using sine curve.', tags: ['smooth'], }, { id: 'sine-in-out', label: 'Sine In Out', category: 'sine', value: [0.37, 0, 0.63, 1], description: 'Smooth acceleration and deceleration.', tags: ['smooth'], }, // ─── Quad ─────────────────────────────────────────────────── { id: 'quad-in', label: 'Quad In', category: 'quad', value: [0.11, 0, 0.5, 0], description: 'Quadratic acceleration.', tags: ['power'], }, { id: 'quad-out', label: 'Quad Out', category: 'quad', value: [0.5, 1, 0.89, 1], description: 'Quadratic deceleration.', tags: ['power'], }, { id: 'quad-in-out', label: 'Quad In Out', category: 'quad', value: [0.45, 0, 0.55, 1], description: 'Symmetric quadratic easing.', tags: ['power'], }, // ─── Cubic ────────────────────────────────────────────────── { id: 'cubic-in', label: 'Cubic In', category: 'cubic', value: [0.32, 0, 0.67, 0], description: 'Cubic acceleration.', tags: ['power'], }, { id: 'cubic-out', label: 'Cubic Out', category: 'cubic', value: [0.33, 1, 0.68, 1], description: 'Cubic deceleration.', tags: ['power'], }, { id: 'cubic-in-out', label: 'Cubic In Out', category: 'cubic', value: [0.65, 0, 0.35, 1], description: 'Symmetric cubic easing.', tags: ['power'], }, // ─── Quart ────────────────────────────────────────────────── { id: 'quart-in', label: 'Quart In', category: 'quart', value: [0.5, 0, 0.75, 0], description: 'Quartic acceleration.', tags: ['power'], }, { id: 'quart-out', label: 'Quart Out', category: 'quart', value: [0.25, 1, 0.5, 1], description: 'Quartic deceleration.', tags: ['power'], }, { id: 'quart-in-out', label: 'Quart In Out', category: 'quart', value: [0.76, 0, 0.24, 1], description: 'Symmetric quartic easing.', tags: ['power'], }, // ─── Quint ────────────────────────────────────────────────── { id: 'quint-in', label: 'Quint In', category: 'quint', value: [0.64, 0, 0.78, 0], description: 'Quintic acceleration.', tags: ['power'], }, { id: 'quint-out', label: 'Quint Out', category: 'quint', value: [0.22, 1, 0.36, 1], description: 'Quintic deceleration.', tags: ['power'], }, { id: 'quint-in-out', label: 'Quint In Out', category: 'quint', value: [0.83, 0, 0.17, 1], description: 'Symmetric quintic easing.', tags: ['power'], }, // ─── Expo ─────────────────────────────────────────────────── { id: 'expo-in', label: 'Expo In', category: 'expo', value: [0.7, 0, 0.84, 0], description: 'Exponential acceleration. Very slow start.', tags: ['dramatic'], }, { id: 'expo-out', label: 'Expo Out', category: 'expo', value: [0.16, 1, 0.3, 1], description: 'Exponential deceleration. Very slow end.', tags: ['dramatic'], }, { id: 'expo-in-out', label: 'Expo In Out', category: 'expo', value: [0.87, 0, 0.13, 1], description: 'Exponential symmetric easing.', tags: ['dramatic'], }, // ─── Circ ─────────────────────────────────────────────────── { id: 'circ-in', label: 'Circ In', category: 'circ', value: [0.55, 0, 1, 0.45], description: 'Circular acceleration.', tags: ['smooth'], }, { id: 'circ-out', label: 'Circ Out', category: 'circ', value: [0, 0.55, 0.45, 1], description: 'Circular deceleration.', tags: ['smooth'], }, { id: 'circ-in-out', label: 'Circ In Out', category: 'circ', value: [0.85, 0, 0.15, 1], description: 'Symmetric circular easing.', tags: ['smooth'], }, // ─── Back / Overshoot ──────────────────────────────────────── { id: 'back-in', label: 'Back In', category: 'back', value: [0.36, 0, 0.66, -0.56], description: 'Pulls back before accelerating forward.', tags: ['overshoot', 'character'], overshootRecommended: true, }, { id: 'back-out', label: 'Back Out', category: 'back', value: [0.34, 1.56, 0.64, 1], description: 'Overshoots the target then settles.', tags: ['overshoot', 'character'], overshootRecommended: true, }, { id: 'back-in-out', label: 'Back In Out', category: 'back', value: [0.68, -0.6, 0.32, 1.6], description: 'Pulls back, overshoots, settles.', tags: ['overshoot', 'character'], overshootRecommended: true, }, // ─── Emphasis ─────────────────────────────────────────────── { id: 'anticipate', label: 'Anticipate', category: 'emphasis', value: [0.38, -0.4, 0.88, 0.65], description: 'Pulls back strongly before launching forward.', tags: ['character', 'overshoot'], overshootRecommended: true, }, { id: 'snap', label: 'Snap', category: 'emphasis', value: [0.2, 1.6, 0.6, 1], description: 'Snappy overshoot, quick settle.', tags: ['character', 'overshoot'], overshootRecommended: true, }, { id: 'swift-out', label: 'Swift Out', category: 'emphasis', value: [0.55, 0, 0.1, 1], description: 'Material Design swift-out. Fast exit, gentle settle.', tags: ['material', 'ui'], }, { id: 'soft-bounce', label: 'Soft Bounce', category: 'emphasis', value: [0.34, 1.3, 0.64, 1], description: 'Light bounce at the end. Playful but subtle.', tags: ['character', 'overshoot'], overshootRecommended: true, }, { id: 'dramatic-out', label: 'Dramatic Out', category: 'emphasis', value: [0, 0.9, 0.1, 1], description: 'Explosive start, clean landing.', tags: ['dramatic', 'ui'], }, // ─── Utility ──────────────────────────────────────────────── { id: 'flat-start', label: 'Flat Start', category: 'utility', value: [0, 0.5, 0.5, 1], description: 'Delayed start, smooth arrival.', tags: ['ui'], }, { id: 'flat-end', label: 'Flat End', category: 'utility', value: [0.5, 0, 1, 0.5], description: 'Quick launch, gradual slowdown to flat.', tags: ['ui'], }, { id: 'symmetric', label: 'Symmetric', category: 'utility', value: [0.5, 0, 0.5, 1], description: 'Perfectly mirrored ease in and out.', tags: ['balanced'], }, { id: 'snappy-ui', label: 'Snappy UI', category: 'utility', value: [0.2, 0, 0, 1], description: 'Recommended for micro-interactions and UI transitions.', tags: ['ui', 'recommended'], }, { id: 'gentle-ui', label: 'Gentle UI', category: 'utility', value: [0.4, 0, 0.2, 1], description: 'Smooth and natural feel for UI elements.', tags: ['ui', 'recommended'], }, ]"
+        },
+        {
+          "kind": "function",
+          "name": "getPreset",
+          "return": {
+            "type": {
+              "text": "PresetDefinition | undefined"
+            }
+          },
+          "parameters": [
+            {
+              "name": "id",
+              "type": {
+                "text": "string"
+              }
+            }
+          ],
+          "description": "Get a preset by id"
+        },
+        {
+          "kind": "function",
+          "name": "getPresetsByCategory",
+          "return": {
+            "type": {
+              "text": "PresetDefinition[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "category",
+              "type": {
+                "text": "PresetCategory"
+              }
+            }
+          ],
+          "description": "Get all presets belonging to a category"
+        },
+        {
+          "kind": "function",
+          "name": "searchPresets",
+          "return": {
+            "type": {
+              "text": "PresetDefinition[]"
+            }
+          },
+          "parameters": [
+            {
+              "name": "query",
+              "type": {
+                "text": "string"
+              }
+            }
+          ],
+          "description": "Simple text search across id, label, tags, and description"
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "PRESETS",
+          "declaration": {
+            "name": "PRESETS",
+            "module": "src/presets/registry.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getPreset",
+          "declaration": {
+            "name": "getPreset",
+            "module": "src/presets/registry.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "getPresetsByCategory",
+          "declaration": {
+            "name": "getPresetsByCategory",
+            "module": "src/presets/registry.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "searchPresets",
+          "declaration": {
+            "name": "searchPresets",
+            "module": "src/presets/registry.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/state/editor-state.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "createInitialState",
+          "return": {
+            "type": {
+              "text": "EditorState"
+            }
+          },
+          "parameters": [
+            {
+              "name": "overrides",
+              "default": "{}",
+              "type": {
+                "text": "Partial<EditorState>"
+              }
+            }
+          ],
+          "description": "Produce the default initial EditorState.\nCallers may override individual fields via spread."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "createInitialState",
+          "declaration": {
+            "name": "createInitialState",
+            "module": "src/state/editor-state.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/state/reducers.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "setHandle",
+          "return": {
+            "type": {
+              "text": "EditorState"
+            }
+          },
+          "parameters": [
+            {
+              "name": "state",
+              "type": {
+                "text": "EditorState"
+              }
+            },
+            {
+              "name": "handle",
+              "type": {
+                "text": "'p1' | 'p2'"
+              }
+            },
+            {
+              "name": "x",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "y",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
+          "description": "Move a handle to new coordinates.\nApplies snap and bounds clamping.\nClears selectedPreset — value no longer matches any preset exactly."
+        },
+        {
+          "kind": "function",
+          "name": "startDrag",
+          "return": {
+            "type": {
+              "text": "EditorState"
+            }
+          },
+          "parameters": [
+            {
+              "name": "state",
+              "type": {
+                "text": "EditorState"
+              }
+            },
+            {
+              "name": "handle",
+              "type": {
+                "text": "'p1' | 'p2'"
+              }
+            }
+          ],
+          "description": "Begin a drag. Records which handle is active."
+        },
+        {
+          "kind": "function",
+          "name": "endDrag",
+          "return": {
+            "type": {
+              "text": "EditorState"
+            }
+          },
+          "parameters": [
+            {
+              "name": "state",
+              "type": {
+                "text": "EditorState"
+              }
+            }
+          ],
+          "description": "End a drag. Clears dragging flag."
+        },
+        {
+          "kind": "function",
+          "name": "focusHandle",
+          "return": {
+            "type": {
+              "text": "EditorState"
+            }
+          },
+          "parameters": [
+            {
+              "name": "state",
+              "type": {
+                "text": "EditorState"
+              }
+            },
+            {
+              "name": "handle",
+              "type": {
+                "text": "ActiveHandle"
+              }
+            }
+          ],
+          "description": "Set keyboard focus on a handle."
+        },
+        {
+          "kind": "function",
+          "name": "selectPreset",
+          "return": {
+            "type": {
+              "text": "EditorState"
+            }
+          },
+          "parameters": [
+            {
+              "name": "state",
+              "type": {
+                "text": "EditorState"
+              }
+            },
+            {
+              "name": "preset",
+              "type": {
+                "text": "PresetDefinition"
+              }
+            }
+          ],
+          "description": "Select a preset. Updates value and records selectedPreset id."
+        },
+        {
+          "kind": "function",
+          "name": "setValue",
+          "return": {
+            "type": {
+              "text": "EditorState"
+            }
+          },
+          "parameters": [
+            {
+              "name": "state",
+              "type": {
+                "text": "EditorState"
+              }
+            },
+            {
+              "name": "raw",
+              "type": {
+                "text": "Parameters<typeof parseBezierValue>[0]"
+              }
+            }
+          ],
+          "description": "Set value from any accepted external input.\nParses, normalizes, clears selectedPreset."
+        },
+        {
+          "kind": "function",
+          "name": "reset",
+          "return": {
+            "type": {
+              "text": "EditorState"
+            }
+          },
+          "parameters": [
+            {
+              "name": "state",
+              "type": {
+                "text": "EditorState"
+              }
+            }
+          ],
+          "description": "Reset to the stored initialValue."
+        },
+        {
+          "kind": "function",
+          "name": "setBounds",
+          "return": {
+            "type": {
+              "text": "EditorState"
+            }
+          },
+          "parameters": [
+            {
+              "name": "state",
+              "type": {
+                "text": "EditorState"
+              }
+            },
+            {
+              "name": "bounds",
+              "type": {
+                "text": "BoundsConfig"
+              }
+            }
+          ],
+          "description": "Update bounds mode. Re-clamps current value if switching to 'css'."
+        },
+        {
+          "kind": "function",
+          "name": "setOvershoot",
+          "return": {
+            "type": {
+              "text": "EditorState"
+            }
+          },
+          "parameters": [
+            {
+              "name": "state",
+              "type": {
+                "text": "EditorState"
+              }
+            },
+            {
+              "name": "overshoot",
+              "type": {
+                "text": "boolean"
+              }
+            }
+          ],
+          "description": "Toggle overshoot mode. When disabling, clamps y values back into [0,1]."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "setHandle",
+          "declaration": {
+            "name": "setHandle",
+            "module": "src/state/reducers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "startDrag",
+          "declaration": {
+            "name": "startDrag",
+            "module": "src/state/reducers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "endDrag",
+          "declaration": {
+            "name": "endDrag",
+            "module": "src/state/reducers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "focusHandle",
+          "declaration": {
+            "name": "focusHandle",
+            "module": "src/state/reducers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "selectPreset",
+          "declaration": {
+            "name": "selectPreset",
+            "module": "src/state/reducers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "setValue",
+          "declaration": {
+            "name": "setValue",
+            "module": "src/state/reducers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "reset",
+          "declaration": {
+            "name": "reset",
+            "module": "src/state/reducers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "setBounds",
+          "declaration": {
+            "name": "setBounds",
+            "module": "src/state/reducers.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "setOvershoot",
+          "declaration": {
+            "name": "setOvershoot",
+            "module": "src/state/reducers.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/types/public.ts",
+      "declarations": [],
+      "exports": []
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/utils/a11y.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "handleAriaLabel",
+          "return": {
+            "type": {
+              "text": "string"
+            }
+          },
+          "parameters": [
+            {
+              "name": "handle",
+              "type": {
+                "text": "'p1' | 'p2'"
+              }
+            },
+            {
+              "name": "x",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "y",
+              "type": {
+                "text": "number"
+              }
+            },
+            {
+              "name": "precision",
+              "default": "2"
+            }
+          ],
+          "description": "Build aria-label for a bezier handle.\nDescribes position to screen reader users."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "handleAriaLabel",
+          "declaration": {
+            "name": "handleAriaLabel",
+            "module": "src/utils/a11y.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/utils/dom.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "resolveHandle",
+          "return": {
+            "type": {
+              "text": "'p1' | 'p2' | null"
+            }
+          },
+          "parameters": [
+            {
+              "name": "el",
+              "type": {
+                "text": "Element | null"
+              }
+            }
+          ],
+          "description": "Walk up the DOM from an event target to the nearest handle group.\nReturns 'p1' | 'p2' or null when the target is not a handle."
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "resolveHandle",
+          "declaration": {
+            "name": "resolveHandle",
+            "module": "src/utils/dom.ts"
+          }
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "src/utils/events.ts",
+      "declarations": [
+        {
+          "kind": "function",
+          "name": "emitChange",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "parameters": [
+            {
+              "name": "host",
+              "type": {
+                "text": "EventTarget"
+              }
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "CubicBezierObject"
+              }
+            },
+            {
+              "name": "preset",
+              "type": {
+                "text": "string | null"
+              }
+            },
+            {
+              "name": "eventName",
+              "type": {
+                "text": "'input' | 'change'"
+              }
+            },
+            {
+              "name": "precision",
+              "default": "4"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "emitPresetChange",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "parameters": [
+            {
+              "name": "host",
+              "type": {
+                "text": "EventTarget"
+              }
+            },
+            {
+              "name": "preset",
+              "type": {
+                "text": "PresetDefinition"
+              }
+            },
+            {
+              "name": "value",
+              "type": {
+                "text": "CubicBezierObject"
+              }
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "emitCopy",
+          "return": {
+            "type": {
+              "text": "void"
+            }
+          },
+          "parameters": [
+            {
+              "name": "host",
+              "type": {
+                "text": "EventTarget"
+              }
+            },
+            {
+              "name": "cssValue",
+              "type": {
+                "text": "string"
+              }
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "emitChange",
+          "declaration": {
+            "name": "emitChange",
+            "module": "src/utils/events.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "emitPresetChange",
+          "declaration": {
+            "name": "emitPresetChange",
+            "module": "src/utils/events.ts"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "emitCopy",
+          "declaration": {
+            "name": "emitCopy",
+            "module": "src/utils/events.ts"
+          }
+        }
+      ]
+    }
+  ]
+}

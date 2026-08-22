@@ -28,18 +28,20 @@
     "./dist/index.cjs"
   ],
   "scripts": {
-    "build": "vite build && tsc --emitDeclarationOnly",
+    "build": "vite build && tsc --emitDeclarationOnly && npm run cem",
     "dev": "vite build --watch",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src",
     "test:smoke": "vitest run -c vitest.smoke.config.ts",
-    "test:browser": "vitest run -c vitest.config.ts"
+    "test:browser": "vitest run -c vitest.config.ts",
+    "cem": "cem analyze --litelement && node scripts/cem-postprocess.mjs"
   },
   "peerDependencies": {
     "lit": "^3.0.0"
   },
   "devDependencies": {
     "@bezier-curve-editor/tsconfig": "workspace:*",
+    "@custom-elements-manifest/analyzer": "^0.11.0",
     "@types/node": "^22.0.0",
     "@vitest/browser": "^3.2.7",
     "lit": "^3.2.1",
@@ -47,5 +49,6 @@
     "typescript": "^5.7.3",
     "vite": "^6.0.0",
     "vitest": "^3.2.7"
-  }
+  },
+  "customElements": "custom-elements.json"
 }
