@@ -11,15 +11,14 @@ export function emitChange(
   value: CubicBezierObject,
   preset: string | null,
   eventName: 'input' | 'change',
+  precision = 4,
 ): void {
   const detail: BezierChangeDetail = {
     value,
-    cssValue: serializeToCss(value),
+    cssValue: serializeToCss(value, precision),
     ...(preset ? { preset } : {}),
   }
-  host.dispatchEvent(
-    new CustomEvent(eventName, { detail, bubbles: true, composed: true }),
-  )
+  host.dispatchEvent(new CustomEvent(eventName, { detail, bubbles: true, composed: true }))
 }
 
 export function emitPresetChange(
@@ -28,9 +27,7 @@ export function emitPresetChange(
   value: CubicBezierObject,
 ): void {
   const detail: BezierPresetChangeDetail = { preset, value }
-  host.dispatchEvent(
-    new CustomEvent('presetchange', { detail, bubbles: true, composed: true }),
-  )
+  host.dispatchEvent(new CustomEvent('presetchange', { detail, bubbles: true, composed: true }))
 }
 
 export function emitCopy(host: EventTarget, cssValue: string): void {

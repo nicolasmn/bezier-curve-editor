@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  parseBezierValue,
-  serializeToCss,
-  isOvershoot,
-  DEFAULT_VALUE,
-} from '../math/curve.js'
+import { parseBezierValue, serializeToCss, isOvershoot, DEFAULT_VALUE } from '../math/curve.js'
 import { createInitialState } from '../state/editor-state.js'
 import { setHandle, reset, selectPreset } from '../state/reducers.js'
 import { PRESETS } from '../presets/registry.js'
@@ -15,11 +10,21 @@ describe('parseBezierValue', () => {
   })
 
   it('parses a CSS string', () => {
-    expect(parseBezierValue('cubic-bezier(0.42, 0, 0.58, 1)')).toEqual({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })
+    expect(parseBezierValue('cubic-bezier(0.42, 0, 0.58, 1)')).toEqual({
+      x1: 0.42,
+      y1: 0,
+      x2: 0.58,
+      y2: 1,
+    })
   })
 
   it('parses an object', () => {
-    expect(parseBezierValue({ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 })).toEqual({ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 })
+    expect(parseBezierValue({ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 })).toEqual({
+      x1: 0.25,
+      y1: 0.1,
+      x2: 0.25,
+      y2: 1,
+    })
   })
 
   it('round-trips: tuple → css string → object', () => {
@@ -33,14 +38,15 @@ describe('parseBezierValue', () => {
 
   it('throws on short tuple', () => {
     const short: unknown = [0.42, 0]
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     expect(() => parseBezierValue(short as Parameters<typeof parseBezierValue>[0])).toThrow()
   })
 })
 
 describe('serializeToCss', () => {
   it('produces correct string', () => {
-    expect(serializeToCss({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })).toBe('cubic-bezier(0.42, 0, 0.58, 1)')
+    expect(serializeToCss({ x1: 0.42, y1: 0, x2: 0.58, y2: 1 })).toBe(
+      'cubic-bezier(0.42, 0, 0.58, 1)',
+    )
   })
 
   it('strips trailing zeros', () => {
@@ -48,7 +54,9 @@ describe('serializeToCss', () => {
   })
 
   it('respects precision override', () => {
-    expect(serializeToCss({ x1: 0.123456, y1: 0, x2: 0.654321, y2: 1 }, 2)).toBe('cubic-bezier(0.12, 0, 0.65, 1)')
+    expect(serializeToCss({ x1: 0.123456, y1: 0, x2: 0.654321, y2: 1 }, 2)).toBe(
+      'cubic-bezier(0.12, 0, 0.65, 1)',
+    )
   })
 })
 

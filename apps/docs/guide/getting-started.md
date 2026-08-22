@@ -36,7 +36,7 @@ const editor = document.querySelector('bezier-curve-editor')
 // Fires on every drag move
 editor.addEventListener('input', (e) => {
   console.log(e.detail.cssValue) // 'cubic-bezier(...)'
-  console.log(e.detail.value)    // { x1, y1, x2, y2 }
+  console.log(e.detail.value) // { x1, y1, x2, y2 }
 })
 
 // Fires when drag ends or value is committed
@@ -49,8 +49,8 @@ editor.addEventListener('change', (e) => {
 
 ```js
 // Read
-const css = editor.getCssValue()   // 'cubic-bezier(0.42, 0, 0.58, 1)'
-const obj = editor.getValue()      // { x1: 0.42, y1: 0, x2: 0.58, y2: 1 }
+const css = editor.getCssValue() // 'cubic-bezier(0.42, 0, 0.58, 1)'
+const obj = editor.getValue() // { x1: 0.42, y1: 0, x2: 0.58, y2: 1 }
 
 // Set programmatically — accepts tuple, object, or CSS string
 editor.setValue([0.25, 0.1, 0.25, 1])
@@ -63,14 +63,16 @@ editor.reset()
 
 ## Keyboard Editing
 
-Focus the element (`Tab` or click), then:
+`Tab` moves focus to control point 1, then to control point 2, then out of the
+component — handles are individually focusable, nothing traps keyboard focus.
 
-| Key | Action |
-|---|---|
-| `Tab` / `Shift+Tab` | Cycle focus between control point 1 and 2 |
-| `Arrow keys` | Nudge focused handle (step = snap grid or 0.01) |
-| `Shift+Arrow` | Coarse nudge ×10 |
-| `Escape` | Deselect handle |
+| Key                 | Action                                                         |
+| ------------------- | -------------------------------------------------------------- |
+| `Tab` / `Shift+Tab` | Move between the two handles (and out of the component)        |
+| `Arrow keys`        | Nudge focused handle (step = snap grid or 0.01), fires `input` |
+| `Shift+Arrow`       | Coarse nudge ×10                                               |
+| Arrow key release   | Commits a `change` event, like `<input type="range">`          |
+| `Escape`            | Deselect handle (blurs it)                                     |
 
 ## Next Steps
 

@@ -1,6 +1,7 @@
 import type { ReactiveController, ReactiveControllerHost } from 'lit'
 import type { EditorState, ActiveHandle } from '../state/editor-state.js'
 import { startDrag, endDrag, setHandle } from '../state/reducers.js'
+import { resolveHandle } from '../utils/dom.js'
 
 export interface PointerControllerHost extends ReactiveControllerHost {
   state: EditorState
@@ -19,7 +20,9 @@ export class PointerController implements ReactiveController {
   }
 
   hostConnected(): void {}
-  hostDisconnected(): void { this.removeListeners() }
+  hostDisconnected(): void {
+    this.removeListeners()
+  }
 
   attach(svg: SVGSVGElement): void {
     this.activeSvg = svg
@@ -35,6 +38,7 @@ export class PointerController implements ReactiveController {
     this.host.onStateChange(startDrag(this.host.state, handle), null)
     globalThis.addEventListener('pointermove', this.onPointerMove)
     globalThis.addEventListener('pointerup', this.onPointerUp)
+    globalThis.addEventListener('pointercancel', this.onPointerCancel)
   }
 
   private onPointerMove = (e: PointerEvent): void => {
@@ -55,6 +59,14 @@ export class PointerController implements ReactiveController {
     this.removeListeners()
   }
 
+  private onPointerCancel = (): void => {
+    if (!this.activeHandle) return
+    // Interrupted drag (touch scroll takeover, etc.) — release without commit
+    this.host.onStateChange(endDrag(this.host.state), null)
+    this.activeHandle = null
+    this.removeListeners()
+  }
+
   private svgPoint(e: PointerEvent): { x: number; y: number } | null {
     const svg = this.activeSvg ?? this.host.getSvgElement()
     if (!svg) return null
@@ -68,14 +80,6 @@ export class PointerController implements ReactiveController {
   private removeListeners(): void {
     globalThis.removeEventListener('pointermove', this.onPointerMove)
     globalThis.removeEventListener('pointerup', this.onPointerUp)
+    globalThis.removeEventListener('pointercancel', this.onPointerCancel)
   }
-}
-
-function resolveHandle(el: Element | null): ActiveHandle {
-  while (el) {
-    const h = el.getAttribute?.('data-handle')
-    if (h === 'p1' || h === 'p2') return h
-    el = el.parentElement
-  }
-  return null
 }
