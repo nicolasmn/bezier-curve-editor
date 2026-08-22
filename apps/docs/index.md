@@ -50,5 +50,52 @@ features:
 Try it in plain HTML — no framework, no build step:
 
 ```html
+<script type="module">
+  import '@bezier-curve-editor/core'
+</script>
 
+<bezier-curve-editor
+  value="cubic-bezier(0.34, 1.56, 0.64, 1)"
+></bezier-curve-editor>
 ```
+
+<style>
+/* Hero: text left, live editor right */
+.VPHomeHero .container {
+  display: flex;
+}
+.VPHomeHero .main {
+  max-width: 560px;
+  margin-left: 0;
+  text-align: left;
+}
+.VPHomeHero .image {
+  order: 2;
+  margin-left: auto;
+  padding-right: 24px;
+}
+@media (min-width: 960px) {
+  .VPHomeHero .actions {
+    justify-content: flex-start;
+  }
+}
+
+.home-demo {
+  max-width: 1152px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+.home-demo-side { min-width: 0; }
+.home-hint {
+  font-size: 0.85rem;
+  opacity: 0.65;
+  margin-top: 0;
+}
+.home-more { font-weight: 600; font-size: 0.9rem; }
+</style>
+<style>
+.home-hero-editor {
+  display: flex;
+  justify-content: center;
+}
+</style>

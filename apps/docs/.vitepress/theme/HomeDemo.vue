@@ -9,17 +9,40 @@ const presets = ['back-out', 'back-in-out', 'expo-out', 'ease-in-out', 'snap']
 let timer
 
 onMounted(async () => {
-  const mod = await import('@bezier-curve-editor/core')
-  await mod !== false && customElements.whenDefined('bezier-curve-editor').then(() => {
-    const ed = document.getElementById('home-editor')
-    if (!ed) return
-    let i = 0
-    timer = setInterval(() => {
-      i = (i + 1) % presets.length
-      try { ed.selectPreset(presets[i]) } catch {}
-    }, 2600)
-  })
+  await import('@bezier-curve-editor/core')
+  await customElements.whenDefined('bezier-curve-editor')
+
+  const ed = document.getElementById('home-editor')
+  if (!ed) return
+
+  // Move the editor into the hero's right half (empty .image slot)
+  const host = document.querySelector('.VPHomeHero .container')
+  if (host && !host.querySelector('#home-editor')) {
+    let imageSlot = host.querySelector('.image')
+    if (!imageSlot) {
+      imageSlot = document.createElement('div')
+      imageSlot.className = 'image'
+      host.appendChild(imageSlot)
+    }
+    const wrap = document.createElement('div')
+    wrap.className = 'home-hero-editor'
+    wrap.appendChild(ed)
+    imageSlot.appendChild(wrap)
+  }
+
+  let i = 0
+  timer = setInterval(() => {
+    i = (i + 1) % presets.length
+    try { ed.selectPreset(presets[i]) } catch {}
+  }, 2600)
 })
 
 onUnmounted(() => clearInterval(timer))
 </script>
+
+<style>
+.home-hero-editor {
+  display: flex;
+  justify-content: center;
+}
+</style>
