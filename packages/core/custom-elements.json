@@ -8,7 +8,7 @@
       "declarations": [
         {
           "kind": "function",
-          "name": "y",
+          "name": "m",
           "parameters": [
             {
               "name": "e"
@@ -17,7 +17,7 @@
         },
         {
           "kind": "function",
-          "name": "g",
+          "name": "w",
           "parameters": [
             {
               "name": "e"
@@ -30,7 +30,7 @@
         },
         {
           "kind": "function",
-          "name": "ae",
+          "name": "de",
           "parameters": [
             {
               "name": "e"
@@ -39,34 +39,34 @@
         },
         {
           "kind": "function",
-          "name": "p",
+          "name": "f",
           "parameters": [
             {
               "name": "e"
             },
             {
               "name": "t"
-            },
-            {
-              "name": "r"
-            }
-          ]
-        },
-        {
-          "kind": "function",
-          "name": "_",
-          "parameters": [
-            {
-              "name": "e"
-            },
-            {
-              "name": "t"
-            },
-            {
-              "name": "r"
             },
             {
               "name": "s"
+            }
+          ]
+        },
+        {
+          "kind": "function",
+          "name": "v",
+          "parameters": [
+            {
+              "name": "e"
+            },
+            {
+              "name": "t"
+            },
+            {
+              "name": "s"
+            },
+            {
+              "name": "r"
             },
             {
               "name": "n"
@@ -75,7 +75,7 @@
         },
         {
           "kind": "function",
-          "name": "ce",
+          "name": "he",
           "parameters": [
             {
               "name": "e"
@@ -88,7 +88,7 @@
         },
         {
           "kind": "function",
-          "name": "V",
+          "name": "K",
           "parameters": [
             {
               "name": "e"
@@ -97,7 +97,7 @@
         },
         {
           "kind": "variable",
-          "name": "$",
+          "name": "C",
           "type": {
             "text": "object"
           },
@@ -106,7 +106,7 @@
         {
           "kind": "variable",
           "name": "a",
-          "default": "class extends F { constructor() { super(...arguments), this._theme = \"auto\", this.overshoot = !1, this.readonly = !1, this.disabled = !1, this.showGrid = !0, this.showPreview = !0, this.precision = 4, this.gridSubdivisions = se, this._state = q(), this._pointer = new W(this), this._keyboard = new X(this), this._copy = async () => { const e = this.getCssValue(); try { await globalThis.navigator.clipboard.writeText(e); } catch { } ee(this, e); }; } get theme() { return this._theme; } set theme(e) { const t = this._theme; this._theme = e, e === \"auto\" ? this.removeAttribute(\"theme\") : this.setAttribute(\"theme\", e), this.requestUpdate(\"theme\", t); } get snap() { const e = this._state.snap; return typeof e == \"number\" ? e : e.enabled ? e.gridSize : 0; } set snap(e) { this._state = { ...this._state, snap: Math.max(0, e) }, this.requestUpdate(\"snap\", void 0); } get presets() { return this._state.presets; } set presets(e) { this._state = { ...this._state, presets: e }, this.requestUpdate(\"presets\", void 0); } get selectedPreset() { return this._state.selectedPreset; } set selectedPreset(e) { if (e === null) { this._state = { ...this._state, selectedPreset: null }, this.requestUpdate(\"selectedPreset\", void 0); return; } this.selectPreset(e); } set value(e) { try { const t = y(e), r = R(this._state, t); if (r === this._state) return; this._state = { ...r, initialValue: t }; } catch { this.dispatchEvent(new CustomEvent(\"invalid\", { bubbles: !0, composed: !0 })); } } get value() { return this._state.value; } set bounds(e) { this._state = G(this._state, e); } get bounds() { return this._state.bounds; } // ─── Controller host interface ──────────────────────────────────────────── get state() { return this._state; } onStateChange(e, t) { this._state = e, t && Q(this, e.value, e.selectedPreset, t, this.precision), this.requestUpdate(); } getSvgElement() { return this.renderRoot.querySelector(\"svg\"); } // ─── Lifecycle ──────────────────────────────────────────────────────────── firstUpdated() { const e = this.getSvgElement(); e && this._pointer.attach(e), this._keyboard.attach(this), this.setAttribute(\"role\", \"group\"), this.setAttribute(\"aria-label\", \"Bezier curve editor\"); } updated(e) { let t = !1; e.has(\"overshoot\") && (this._state = J(this._state, this.overshoot), t = !0), e.has(\"readonly\") && (this._state = { ...this._state, readonly: this.readonly }, t = !0), e.has(\"disabled\") && (this._state = { ...this._state, disabled: this.disabled }, t = !0), t && this.requestUpdate(); } // ─── Public API ─────────────────────────────────────────────────────────── getValue() { return this._state.value; } getCssValue() { return g(this._state.value, this.precision); } setValue(e) { if (this._state.readonly || this._state.disabled) return; const t = y(e); this._state = { ...this._state, value: t, initialValue: t, selectedPreset: null }, this.requestUpdate(); } /** * Select a preset by id. No-ops if id not found in current preset catalog. * Emits `presetchange` on success. */ selectPreset(e) { const t = this._state.presets.find((r) => r.id === e); t && (this._state = I(this._state, t), this.overshoot !== this._state.overshoot && (this.overshoot = this._state.overshoot), Z(this, t, this._state.value), this.requestUpdate()); } reset() { this._state = j(this._state), this.requestUpdate(); } focus() { super.focus(); } // ─── Render helpers ─────────────────────────────────────────────────────── /** * Fixed viewBox: the [0,1]² curve area plus a constant gutter (BASE_PAD). * The editor NEVER rescales — its size and zoom level stay constant at all * times. Handles pulled outside the curve area simply render outside the * canvas (svg overflow: visible) instead of forcing a zoom-out. */ _viewBox() { return { min: -z, size: i + z * 2 }; } _renderGrid() { if (!this.showGrid) return null; const e = [], t = this.gridSubdivisions; for (let r = 1; r < t; r++) { const s = r / t * i; e.push(h` <line class=\"grid-line\" x1=${s} y1=\"0\" x2=${s} y2=${i} /> <line class=\"grid-line\" x1=\"0\" y1=${s} x2=${i} y2=${s} /> `); } return h` ${e} <line class=\"grid-diagonal\" x1=\"0\" y1=${i} x2=${i} y2=\"0\" /> `; } _renderCurve(e) { const t = e.x1 * i, r = (1 - e.y1) * i, s = e.x2 * i, n = (1 - e.y2) * i; return h` <path part=\"curve\" class=\"curve-path\" d=\"M 0 ${i} C ${t} ${r}, ${s} ${n}, ${i} 0\" /> `; } /** * A dot travelling along the curve (progress preview). Pure SVG — the * animation runs via CSS offset-path on the same path data as the curve. */ _renderPreview(e) { if (!this.showPreview) return null; const t = e.x1 * i, r = (1 - e.y1) * i, s = e.x2 * i, n = (1 - e.y2) * i, o = `M 0 ${i} C ${t} ${r}, ${s} ${n}, ${i} 0`; return h` <circle class=\"preview-dot\" r=\"3\"> <animateMotion dur=\"1.6s\" repeatCount=\"indefinite\" path=${o} /> </circle> `; } _renderHandles(e) { const t = e.x1 * i, r = (1 - e.y1) * i, s = e.x2 * i, n = (1 - e.y2) * i, { focusedHandle: o } = this._state; return h` <line class=\"handle-line\" x1=\"0\" y1=${i} x2=${t} y2=${r} /> <line class=\"handle-line\" x1=${i} y1=\"0\" x2=${s} y2=${n} /> <g part=\"handle handle-p1\" class=\"handle ${o === \"p1\" ? \"handle--focused\" : \"\"}\" data-handle=\"p1\" tabindex=\"0\" role=\"slider\" aria-label=${k(\"p1\", e.x1, e.y1)} aria-valuemin=\"0\" aria-valuemax=\"1\" aria-valuenow=\"${e.x1.toFixed(4)}\" aria-valuetext=\"x ${e.x1.toFixed(4)}, y ${e.y1.toFixed(4)}\"> <circle cx=${t} cy=${r} r=\"5\" /> </g> <g part=\"handle handle-p2\" class=\"handle ${o === \"p2\" ? \"handle--focused\" : \"\"}\" data-handle=\"p2\" tabindex=\"0\" role=\"slider\" aria-label=${k(\"p2\", e.x2, e.y2)} aria-valuemin=\"0\" aria-valuemax=\"1\" aria-valuenow=\"${e.x2.toFixed(4)}\" aria-valuetext=\"x ${e.x2.toFixed(4)}, y ${e.y2.toFixed(4)}\"> <circle cx=${s} cy=${n} r=\"5\" /> </g> `; } // ─── Render ─────────────────────────────────────────────────────────────── render() { const e = this._state.value, t = g(e, this.precision), r = this._viewBox(); return U` <div part=\"container\" class=\"container\"> <div class=\"canvas-wrap\"> <svg part=\"grid\" viewBox=\"${r.min} ${r.min} ${r.size} ${r.size}\" aria-hidden=\"true\" focusable=\"false\" > ${this._renderGrid()} ${this._renderCurve(e)} ${this._renderPreview(e)} ${this._renderHandles(e)} </svg> </div> <div part=\"toolbar\" class=\"toolbar\"> <span part=\"value-output\" class=\"value-output\" title=${t}>${t}</span> <button part=\"button\" class=\"copy-btn\" type=\"button\" aria-label=\"Copy CSS value\" @click=${this._copy} > Copy </button> </div> </div> `; } }"
+          "default": "class extends M { constructor() { super(...arguments), this._theme = \"auto\", this.overshoot = !1, this.readonly = !1, this.disabled = !1, this.showGrid = !0, this.showPreview = !0, this.precision = 4, this.gridSubdivisions = ae, this._state = I(), this._pointer = new Z(this), this._keyboard = new ee(this), this._copy = async () => { const e = this.getCssValue(); try { await globalThis.navigator.clipboard.writeText(e); } catch { } ne(this, e); }; } get theme() { return this._theme; } set theme(e) { const t = this._theme; this._theme = e, e === \"auto\" ? this.removeAttribute(\"theme\") : this.setAttribute(\"theme\", e), this.requestUpdate(\"theme\", t); } get snap() { const e = this._state.snap; return typeof e == \"number\" ? e : e.enabled ? e.gridSize : 0; } set snap(e) { this._state = { ...this._state, snap: Math.max(0, e) }, this.requestUpdate(\"snap\", void 0); } get presets() { return this._state.presets; } set presets(e) { this._state = { ...this._state, presets: e }, this.requestUpdate(\"presets\", void 0); } get selectedPreset() { return this._state.selectedPreset; } set selectedPreset(e) { if (e === null) { this._state = { ...this._state, selectedPreset: null }, this.requestUpdate(\"selectedPreset\", void 0); return; } this.selectPreset(e); } set value(e) { try { const t = m(e), s = W(this._state, t); if (s === this._state) return; this._state = { ...s, initialValue: t }; } catch { this.dispatchEvent(new CustomEvent(\"invalid\", { bubbles: !0, composed: !0 })); } } get value() { return this._state.value; } set bounds(e) { this._state = Y(this._state, e); } get bounds() { return this._state.bounds; } // ─── Controller host interface ──────────────────────────────────────────── get state() { return this._state; } onStateChange(e, t) { this._state = e, t && se(this, e.value, e.selectedPreset, t, this.precision), this.requestUpdate(); } getSvgElement() { return this.renderRoot.querySelector(\"svg\"); } // ─── Lifecycle ──────────────────────────────────────────────────────────── firstUpdated() { const e = this.getSvgElement(); e && this._pointer.attach(e), this._keyboard.attach(this), this.setAttribute(\"role\", \"group\"), this.setAttribute(\"aria-label\", \"Bezier curve editor\"); } updated(e) { let t = !1; e.has(\"overshoot\") && (this._state = Q(this._state, this.overshoot), t = !0), e.has(\"readonly\") && (this._state = { ...this._state, readonly: this.readonly }, t = !0), e.has(\"disabled\") && (this._state = { ...this._state, disabled: this.disabled }, t = !0), t && this.requestUpdate(); } // ─── Public API ─────────────────────────────────────────────────────────── getValue() { return this._state.value; } getCssValue() { return w(this._state.value, this.precision); } setValue(e) { if (this._state.readonly || this._state.disabled) return; const t = m(e); this._state = { ...this._state, value: t, initialValue: t, selectedPreset: null }, this.requestUpdate(); } /** * Select a preset by id. No-ops if id not found in current preset catalog. * Emits `presetchange` on success. */ selectPreset(e) { const t = this._state.presets.find((s) => s.id === e); t && (this._state = J(this._state, t), this.overshoot !== this._state.overshoot && (this.overshoot = this._state.overshoot), re(this, t, this._state.value), this.requestUpdate()); } reset() { this._state = X(this._state), this.requestUpdate(); } focus() { super.focus(); } // ─── Render helpers ─────────────────────────────────────────────────────── /** * Fixed viewBox: the [0,1]² curve area plus a constant gutter (BASE_PAD). * The editor NEVER rescales — its size and zoom level stay constant at all * times. Handles pulled outside the curve area simply render outside the * canvas (svg overflow: visible) instead of forcing a zoom-out. */ _viewBox() { return { min: -F, size: i + F * 2 }; } _renderGrid() { if (!this.showGrid) return null; const e = [], t = this.gridSubdivisions; for (let s = 1; s < t; s++) { const r = s / t * i; e.push(p` <line class=\"grid-line\" x1=${r} y1=\"0\" x2=${r} y2=${i} /> <line class=\"grid-line\" x1=\"0\" y1=${r} x2=${i} y2=${r} /> `); } return p` ${e} <line class=\"grid-diagonal\" x1=\"0\" y1=${i} x2=${i} y2=\"0\" /> `; } _renderCurve(e) { const t = e.x1 * i, s = (1 - e.y1) * i, r = e.x2 * i, n = (1 - e.y2) * i; return p` <path part=\"curve\" class=\"curve-path\" d=\"M 0 ${i} C ${t} ${s}, ${r} ${n}, ${i} 0\" /> `; } /** * A dot travelling along the straight reference diagonal, its progress * following the easing defined by the curve. Pure SVG/SMIL: the motion * path is the linear diagonal, and keyPoints/keyTimes map eased progress * (sampled from the curve) onto that path. Overshoot values are clamped * into [0,1] — SMIL keyPoints must stay within the path length. */ _renderPreview(e) { if (!this.showPreview) return null; const t = 32, s = [], r = []; for (let n = 0; n <= t; n++) { const o = n / t; let u = 0, h = 1; for (let P = 0; P < 24; P++) { const y = (u + h) / 2; v(y, 0, e.x1, e.x2, 1) < o ? u = y : h = y; } const H = (u + h) / 2, U = v(H, 0, e.y1, e.y2, 1); s.push(o.toFixed(5)), r.push(Math.min(1, Math.max(0, U)).toFixed(5)); } return p` <circle class=\"preview-dot\" r=\"3\"> <animateMotion dur=\"1.6s\" repeatCount=\"indefinite\" calcMode=\"linear\" path=\"M 0 ${i} L ${i} 0\" keyTimes=${s.join(\";\")} keyPoints=${r.join(\";\")} /> </circle> `; } _renderHandles(e) { const t = e.x1 * i, s = (1 - e.y1) * i, r = e.x2 * i, n = (1 - e.y2) * i, { focusedHandle: o } = this._state; return p` <line class=\"handle-line\" x1=\"0\" y1=${i} x2=${t} y2=${s} /> <line class=\"handle-line\" x1=${i} y1=\"0\" x2=${r} y2=${n} /> <g part=\"handle handle-p1\" class=\"handle ${o === \"p1\" ? \"handle--focused\" : \"\"}\" data-handle=\"p1\" tabindex=\"0\" role=\"slider\" aria-label=${L(\"p1\", e.x1, e.y1)} aria-valuemin=\"0\" aria-valuemax=\"1\" aria-valuenow=\"${e.x1.toFixed(4)}\" aria-valuetext=\"x ${e.x1.toFixed(4)}, y ${e.y1.toFixed(4)}\"> <circle cx=${t} cy=${s} r=\"5\" /> </g> <g part=\"handle handle-p2\" class=\"handle ${o === \"p2\" ? \"handle--focused\" : \"\"}\" data-handle=\"p2\" tabindex=\"0\" role=\"slider\" aria-label=${L(\"p2\", e.x2, e.y2)} aria-valuemin=\"0\" aria-valuemax=\"1\" aria-valuenow=\"${e.x2.toFixed(4)}\" aria-valuetext=\"x ${e.x2.toFixed(4)}, y ${e.y2.toFixed(4)}\"> <circle cx=${r} cy=${n} r=\"5\" /> </g> `; } // ─── Render ─────────────────────────────────────────────────────────────── render() { const e = this._state.value, t = w(e, this.precision), s = this._viewBox(); return A` <div part=\"container\" class=\"container\"> <div class=\"canvas-wrap\"> <svg part=\"grid\" viewBox=\"${s.min} ${s.min} ${s.size} ${s.size}\" aria-hidden=\"true\" focusable=\"false\" > ${this._renderGrid()} ${this._renderCurve(e)} ${this._renderPreview(e)} ${this._renderHandles(e)} </svg> </div> <div part=\"toolbar\" class=\"toolbar\"> <span part=\"value-output\" class=\"value-output\" title=${t}>${t}</span> <button part=\"button\" class=\"copy-btn\" type=\"button\" aria-label=\"Copy CSS value\" @click=${this._copy} > Copy </button> </div> </div> `; } }"
         }
       ],
       "exports": [
@@ -122,7 +122,7 @@
           "kind": "js",
           "name": "DEFAULT_VALUE",
           "declaration": {
-            "name": "$",
+            "name": "C",
             "module": "dist/index.js"
           }
         },
@@ -130,7 +130,7 @@
           "kind": "js",
           "name": "PRESETS",
           "declaration": {
-            "name": "H",
+            "name": "D",
             "module": "dist/index.js"
           }
         },
@@ -138,7 +138,7 @@
           "kind": "js",
           "name": "buildCurvePoints",
           "declaration": {
-            "name": "ce",
+            "name": "he",
             "module": "dist/index.js"
           }
         },
@@ -146,7 +146,7 @@
           "kind": "js",
           "name": "clampPoint",
           "declaration": {
-            "name": "p",
+            "name": "f",
             "module": "dist/index.js"
           }
         },
@@ -154,7 +154,7 @@
           "kind": "js",
           "name": "getPreset",
           "declaration": {
-            "name": "de",
+            "name": "be",
             "module": "dist/index.js"
           }
         },
@@ -162,7 +162,7 @@
           "kind": "js",
           "name": "getPresetsByCategory",
           "declaration": {
-            "name": "he",
+            "name": "ve",
             "module": "dist/index.js"
           }
         },
@@ -170,7 +170,7 @@
           "kind": "js",
           "name": "isOvershoot",
           "declaration": {
-            "name": "V",
+            "name": "K",
             "module": "dist/index.js"
           }
         },
@@ -178,7 +178,7 @@
           "kind": "js",
           "name": "parseBezierValue",
           "declaration": {
-            "name": "y",
+            "name": "m",
             "module": "dist/index.js"
           }
         },
@@ -186,7 +186,7 @@
           "kind": "js",
           "name": "sampleCurve1D",
           "declaration": {
-            "name": "_",
+            "name": "v",
             "module": "dist/index.js"
           }
         },
@@ -194,7 +194,7 @@
           "kind": "js",
           "name": "searchPresets",
           "declaration": {
-            "name": "pe",
+            "name": "ye",
             "module": "dist/index.js"
           }
         },
@@ -202,7 +202,7 @@
           "kind": "js",
           "name": "serializeToCss",
           "declaration": {
-            "name": "g",
+            "name": "w",
             "module": "dist/index.js"
           }
         },
@@ -210,7 +210,7 @@
           "kind": "js",
           "name": "toTuple",
           "declaration": {
-            "name": "ae",
+            "name": "de",
             "module": "dist/index.js"
           }
         }
@@ -675,7 +675,7 @@
                   }
                 }
               ],
-              "description": "A dot travelling along the curve (progress preview). Pure SVG — the\nanimation runs via CSS offset-path on the same path data as the curve."
+              "description": "A dot travelling along the straight reference diagonal, its progress\nfollowing the easing defined by the curve. Pure SVG/SMIL: the motion\npath is the linear diagonal, and keyPoints/keyTimes map eased progress\n(sampled from the curve) onto that path. Overshoot values are clamped\ninto [0,1] — SMIL keyPoints must stay within the path length."
             },
             {
               "kind": "method",
