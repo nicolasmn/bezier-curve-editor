@@ -18,8 +18,6 @@
         @copy="logEvent"
         @invalid="logEvent"
       ></bezier-curve-editor>
-      <output class="bce-output" aria-live="polite">{{ cssValue }}</output>
-      <button class="bce-copy" type="button" @click="copy">{{ copyLabel }}</button>
     </div>
 
     <aside class="bce-panel">
@@ -107,42 +105,23 @@ const gridSubdivisions = ref(4)
 const snap = ref(0)
 const query = ref('')
 const selectedId = ref(null)
-const copyLabel = ref('Copy')
 const eventLog = ref('')
 
-const cssValue = ref('cubic-bezier(0.25, 0.1, 0.25, 1)')
-
 const filteredPresets = computed(() => (query.value ? searchPresets(query.value) : PRESETS))
-
-function syncOutput() {
-  const el = editorEl.value
-  if (el) cssValue.value = el.getCssValue()
-}
 
 function logEvent(e) {
   const time = new Date().toLocaleTimeString([], { hour12: false })
   const line = `${time}  ${e.type}  ${JSON.stringify(e.detail)}`
   eventLog.value = `${line}\n${eventLog.value}`.slice(0, 4000)
-  if (e.type === 'input' || e.type === 'presetchange') syncOutput()
 }
 
 function onManualInput() {
   if (selectedId.value !== null) selectedId.value = null
-  syncOutput()
-}
-
-async function copy() {
-  try {
-    await navigator.clipboard.writeText(cssValue.value)
-    copyLabel.value = 'Copied!'
-    setTimeout(() => { copyLabel.value = 'Copy' }, 1200)
-  } catch { /* clipboard unavailable */ }
 }
 
 function applyPreset(p) {
   selectedId.value = p.id
   editorEl.value?.selectPreset(p.id)
-  syncOutput()
 }
 
 function miniCurve([x1, y1, x2, y2]) {
@@ -157,7 +136,6 @@ onMounted(async () => {
   await customElements.whenDefined('bezier-curve-editor')
 
   // Start from the CSS default (ease); no random pick here — that's the home page's job
-  syncOutput()
 })
 </script>
 
@@ -176,27 +154,8 @@ onMounted(async () => {
   flex-shrink: 0;
 }
 .bce-stage bezier-curve-editor {
-  --bce-canvas-size: 300px;
+  --bce-canvas-size: min(300px, calc(100vw - 96px));
 }
-.bce-output {
-  font-family: var(--vp-font-family-mono, ui-monospace, monospace);
-  font-size: 0.85rem;
-  border: 1px solid var(--vp-c-divider);
-  background: var(--vp-c-bg-soft);
-  border-radius: 6px;
-  padding: 8px 12px;
-  word-break: break-all;
-}
-.bce-copy {
-  padding: 6px 16px;
-  border-radius: 6px;
-  border: 1px solid var(--vp-c-brand-1);
-  background: var(--vp-c-brand-1);
-  color: #fff;
-  cursor: pointer;
-  font: inherit;
-}
-.bce-copy:active { opacity: 0.8; }
 .bce-panel {
   flex: 1;
   min-width: 280px;
@@ -268,7 +227,7 @@ onMounted(async () => {
   stroke: var(--vp-c-brand-1);
   stroke-width: 2;
 }
-.bce-preset-label { font-weight: 500; }
+.bce-preset-label { font-weight: 500; white-space: nowrap; }
 .bce-preset code { color: var(--vp-c-text-2); font-size: 0.68rem; }
 .bce-log {
   font-family: var(--vp-font-family-mono, ui-monospace, monospace);
@@ -281,8 +240,22 @@ onMounted(async () => {
   word-break: break-all;
   color: var(--vp-c-text-2);
 }
+
+/* Mobile: compact layout */
 @media (max-width: 760px) {
-  .bce-playground { flex-direction: column; }
+  .bce-playground { flex-direction: column; gap: 20px; }
   .bce-stage { width: 100%; }
+  .bce-panel { min-width: 0; width: 100%; }
+
+  /* Controls in two columns, selects full-width of their cell */
+  .bce-controls { grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+
+  /* Preset rows: drop the numeric code column on narrow screens */
+  .bce-preset { grid-template-columns: 36px 1fr; }
+  .bce-preset code { display: none; }
+  .bce-preset svg { width: 32px; height: 32px; }
+
+  /* Tighter panels */
+  .bce-log { height: 140px; }
 }
 </style>
