@@ -17,6 +17,7 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'API', link: '/api/component' },
       { text: 'Presets', link: '/guide/presets' },
+      { text: 'Live Demo', link: '/demo/' },
       {
         text: 'Changelog',
         link: 'https://github.com/nicolasmn/bezier-curve-editor/releases',
