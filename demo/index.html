@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Bezier Curve Editor — Live Demo</title>
+  <script type="module" crossorigin src="/bezier-curve-editor/demo/assets/index-C_Tmzj82.js"></script>
+  <link rel="stylesheet" crossorigin href="/bezier-curve-editor/demo/assets/index-B8XJeyQF.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>bezier-curve-editor <span class="badge">live demo</span></h1>
+    <div class="theme-toggle" role="group" aria-label="Theme">
+      <button data-theme="auto" class="active">Auto</button>
+      <button data-theme="light">Light</button>
+      <button data-theme="dark">Dark</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="stage">
+      <bezier-curve-editor id="editor"></bezier-curve-editor>
+      <output id="css-output" aria-live="polite">cubic-bezier(0.25, 0.1, 0.25, 1)</output>
+      <button id="copy-btn">Copy</button>
+    </section>
+
+    <aside class="panel">
+      <details open>
+        <summary>Properties</summary>
+        <div class="controls">
+          <label>Borders
+            <select id="ctl-bounds">
+              <option value="css" selected>CSS [0,1]²</option>
+              <option value="free">Free</option>
+            </select>
+          </label>
+          <label><input type="checkbox" id="ctl-overshoot" /> Overshoot (Y outside [0,1])</label>
+          <label><input type="checkbox" id="ctl-readonly" /> Read-only</label>
+          <label><input type="checkbox" id="ctl-disabled" /> Disabled</label>
+          <label><input type="checkbox" id="ctl-grid" checked /> Grid</label>
+          <label><input type="checkbox" id="ctl-preview" checked /> Preview dot</label>
+          <label>Grid subdivisions
+            <select id="ctl-subdiv">
+              <option value="2">2</option>
+              <option value="4" selected>4</option>
+              <option value="6">6</option>
+              <option value="8">8</option>
+            </select>
+          </label>
+          <label>Snapping
+            <select id="ctl-snap">
+              <option value="0" selected>Off</option>
+              <option value="0.05">0.05</option>
+              <option value="0.1">0.10</option>
+              <option value="0.25">0.25</option>
+            </select>
+          </label>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Presets <span id="preset-count"></span></summary>
+        <input id="preset-search" type="search" placeholder="Filter presets…" />
+        <ul id="preset-list" role="listbox" aria-label="Presets"></ul>
+      </details>
+
+      <details>
+        <summary>Events</summary>
+        <pre id="event-log" aria-live="polite"></pre>
+      </details>
+    </aside>
+  </main>
+
+  <footer>
+    <a href="../" title="Back to docs">← Docs</a>
+    <span>·</span>
+    <code>&lt;script type="module" src="https://cdn.jsdelivr.net/npm/@bezier-curve-editor/core"&gt;&lt;/script&gt;</code>
+  </footer>
+
+</body>
+</html>
