@@ -15,7 +15,7 @@
         @input="onManualInput"
         @change="logEvent"
         @presetchange="logEvent"
-        @copy="logEvent"
+        @bce-copy="logEvent"
         @invalid="logEvent"
       ></bezier-curve-editor>
     </div>
