@@ -4,12 +4,15 @@
 
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
+import { PRESETS } from '@bezier-curve-editor/core'
 
-const presets = ['back-out', 'back-in-out', 'expo-out', 'ease-in-out', 'snap']
 let timer
 
 onMounted(async () => {
-  await import('@bezier-curve-editor/core')
+  // Static named import: guarantees the core module (with its side-effectful
+  // element registration) is part of the bundle and evaluated.
+  const mod = await import('@bezier-curve-editor/core')
+  void mod
   await customElements.whenDefined('bezier-curve-editor')
 
   const ed = document.getElementById('home-editor')
@@ -30,11 +33,9 @@ onMounted(async () => {
     imageSlot.appendChild(wrap)
   }
 
-  let i = 0
-  timer = setInterval(() => {
-    i = (i + 1) % presets.length
-    try { ed.selectPreset(presets[i]) } catch {}
-  }, 2600)
+  // Show a random curve on load — no cycling
+  const pick = PRESETS[Math.floor(Math.random() * PRESETS.length)]
+  try { ed.selectPreset(pick.id) } catch {}
 })
 
 onUnmounted(() => clearInterval(timer))
