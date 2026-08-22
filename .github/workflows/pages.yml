@@ -73,4 +73,4 @@ jobs:
           # --no-verify: generated site bundles must not run through the
           # husky/lint-staged hooks (they lint source, not dist output)
           git -C publish commit --no-verify -m "Deploy main site ${GITHUB_SHA}"
-          git push origin "HEAD:gh-pages" --force-with-lease=gh-pages
+          git -C publish push origin "HEAD:gh-pages" --force-with-lease=gh-pages

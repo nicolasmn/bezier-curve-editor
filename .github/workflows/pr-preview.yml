@@ -122,7 +122,7 @@ jobs:
           # --no-verify: generated site bundles must not run through the
           # husky/lint-staged hooks (they lint source, not dist output)
           git -C publish commit --no-verify -m "Deploy preview pr-${PR_NUMBER} (${GITHUB_SHA})"
-          git push origin "HEAD:gh-pages" --force-with-lease=gh-pages
+          git -C publish push origin "HEAD:gh-pages" --force-with-lease=gh-pages
 
       - name: Remove preview
         if: steps.resolve.outputs.action == 'remove'
@@ -136,7 +136,7 @@ jobs:
             exit 0
           fi
           git -C publish commit --no-verify -m "Remove preview pr-${PR_NUMBER}"
-          git push origin "HEAD:gh-pages" --force-with-lease=gh-pages
+          git -C publish push origin "HEAD:gh-pages" --force-with-lease=gh-pages
 
       - name: Comment preview URL on PR
         if: steps.resolve.outputs.action == 'deploy'
