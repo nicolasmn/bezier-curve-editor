@@ -58,7 +58,10 @@ jobs:
           git fetch origin gh-pages
           rm -rf publish
           git worktree add --detach publish origin/gh-pages
-          rsync -a --delete --exclude '/pr-preview' apps/docs/.vitepress/dist/ publish/
+          # --exclude '/.git': rsync --delete must not remove the worktree's
+          # .git file — without it git falls back to the root repository and
+          # the deploy commit lands on main instead of gh-pages
+          rsync -a --delete --exclude '/.git' --exclude '/pr-preview' apps/docs/.vitepress/dist/ publish/
           touch publish/.nojekyll
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
