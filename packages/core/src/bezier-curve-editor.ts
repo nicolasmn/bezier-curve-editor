@@ -22,8 +22,12 @@ import { emitChange, emitCopy, emitPresetChange } from './utils/events.js'
 import { handleAriaLabel } from './utils/a11y.js'
 
 const VB = 100
+/** Extra viewBox margin (in curve units) added around the [0,1]² area. */
+const BASE_PAD = 12
+/** Base handle radius in viewBox units (hover size scales from --bce-handle-size). */
 const HR = 5
-const GRID = 4
+/** Default grid subdivisions — mirrors the --bce-grid-subdivisions token. */
+const GRID_DEFAULT = 4
 
 @customElement('bezier-curve-editor')
 export class BezierCurveEditor extends LitElement {
@@ -112,7 +116,7 @@ export class BezierCurveEditor extends LitElement {
     .curve-path {
       fill: none;
       stroke: var(--bce-curve-color, var(--bce-accent, #4f6ef7));
-      stroke-width: 2;
+      stroke-width: var(--bce-curve-width, 2);
       stroke-linecap: round;
       vector-effect: non-scaling-stroke;
     }
@@ -141,11 +145,13 @@ export class BezierCurveEditor extends LitElement {
       stroke: var(--bce-handle-border, #ffffff);
       stroke-width: 2;
       vector-effect: non-scaling-stroke;
-      transition: r 120ms ease;
+      transition:
+        r 120ms ease,
+        fill 120ms ease;
     }
     .handle--focused circle,
     .handle:hover circle {
-      r: 7;
+      r: calc(var(--bce-handle-size, 10) * 0.7);
     }
     .toolbar {
       display: flex;
@@ -211,6 +217,18 @@ export class BezierCurveEditor extends LitElement {
   @property({ type: Boolean }) showGrid = true
   @property({ type: Boolean }) showPreview = true
   @property({ type: Number }) precision = 4
+  /** Number of grid subdivisions per axis. */
+  @property({ type: Number, attribute: 'grid-subdivisions' }) gridSubdivisions = GRID_DEFAULT
+  /** Snap grid size for pointer and keyboard input. 0 disables snapping. */
+  @property({ type: Number })
+  get snap(): number {
+    const s = this._state.snap
+    return typeof s === 'number' ? s : s.enabled ? s.gridSize : 0
+  }
+  set snap(v: number) {
+    this._state = { ...this._state, snap: Math.max(0, v) }
+    this.requestUpdate('snap', undefined)
+  }
 
   @property({ type: Array })
   get presets(): PresetDefinition[] {
@@ -366,11 +384,31 @@ export class BezierCurveEditor extends LitElement {
 
   // ─── Render helpers ───────────────────────────────────────────────────────
 
+  /**
+   * ViewBox with padding around the [0,1]² curve area. The padding grows just
+   * enough to keep overshooting handles fully inside the visible canvas, so
+   * they remain grabbable even at y = -0.56 or y = 1.56.
+   */
+  private _viewBox(v: CubicBezierObject): { min: number; size: number } {
+    const overshootY = Math.max(
+      Math.abs(Math.min(v.y1, 0)),
+      Math.max(v.y1 - 1, 0),
+      Math.abs(Math.min(v.y2, 0)),
+      Math.max(v.y2 - 1, 0),
+    )
+    // Convert the worst overshoot (in bezier units) into viewBox units and add
+    // a little headroom for the handle radius. BASE_PAD keeps a small gutter
+    // even for in-bounds curves so edge handles aren't clipped in half.
+    const pad = Math.max(BASE_PAD, HR + 2 + overshootY * VB)
+    return { min: -pad, size: VB + pad * 2 }
+  }
+
   private _renderGrid() {
     if (!this.showGrid) return null
     const lines = []
-    for (let i = 1; i < GRID; i++) {
-      const pos = (i / GRID) * VB
+    const n = this.gridSubdivisions
+    for (let i = 1; i < n; i++) {
+      const pos = (i / n) * VB
       lines.push(svg`
         <line class="grid-line" x1=${pos} y1="0" x2=${pos} y2=${VB} />
         <line class="grid-line" x1="0" y1=${pos} x2=${VB} y2=${pos} />
@@ -392,6 +430,24 @@ export class BezierCurveEditor extends LitElement {
     `
   }
 
+  /**
+   * A dot travelling along the curve (progress preview). Pure SVG — the
+   * animation runs via CSS offset-path on the same path data as the curve.
+   */
+  private _renderPreview(v: CubicBezierObject): unknown {
+    if (!this.showPreview) return null
+    const x1 = v.x1 * VB
+    const y1 = (1 - v.y1) * VB
+    const x2 = v.x2 * VB
+    const y2 = (1 - v.y2) * VB
+    const d = `M 0 ${VB} C ${x1} ${y1}, ${x2} ${y2}, ${VB} 0`
+    return svg`
+      <circle class="preview-dot" r="3">
+        <animateMotion dur="1.6s" repeatCount="indefinite" path=${d} />
+      </circle>
+    `
+  }
+
   private _renderHandles(v: CubicBezierObject) {
     const p1x = v.x1 * VB
     const p1y = (1 - v.y1) * VB
@@ -410,7 +466,7 @@ export class BezierCurveEditor extends LitElement {
         aria-valuemin="0" aria-valuemax="1"
         aria-valuenow="${v.x1.toFixed(4)}"
         aria-valuetext="x ${v.x1.toFixed(4)}, y ${v.y1.toFixed(4)}">
-        <circle cx=${p1x} cy=${p1y} r=${HR} />
+        <circle cx=${p1x} cy=${p1y} r="5" />
       </g>
       <g part="handle handle-p2"
         class="handle ${focusedHandle === 'p2' ? 'handle--focused' : ''}"
@@ -419,7 +475,7 @@ export class BezierCurveEditor extends LitElement {
         aria-valuemin="0" aria-valuemax="1"
         aria-valuenow="${v.x2.toFixed(4)}"
         aria-valuetext="x ${v.x2.toFixed(4)}, y ${v.y2.toFixed(4)}">
-        <circle cx=${p2x} cy=${p2y} r=${HR} />
+        <circle cx=${p2x} cy=${p2y} r="5" />
       </g>
     `
   }
@@ -429,11 +485,18 @@ export class BezierCurveEditor extends LitElement {
   override render() {
     const v = this._state.value
     const cssVal = serializeToCss(v, this.precision)
+    const vb = this._viewBox(v)
     return html`
       <div part="container" class="container">
         <div class="canvas-wrap">
-          <svg part="grid" viewBox="0 0 ${VB} ${VB}" aria-hidden="true" focusable="false">
-            ${this._renderGrid()} ${this._renderCurve(v)} ${this._renderHandles(v)}
+          <svg
+            part="grid"
+            viewBox="${vb.min} ${vb.min} ${vb.size} ${vb.size}"
+            aria-hidden="true"
+            focusable="false"
+          >
+            ${this._renderGrid()} ${this._renderCurve(v)} ${this._renderPreview(v)}
+            ${this._renderHandles(v)}
           </svg>
         </div>
         <div part="toolbar" class="toolbar">
