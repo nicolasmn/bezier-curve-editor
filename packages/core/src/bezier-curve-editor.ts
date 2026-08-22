@@ -6,7 +6,7 @@ import type {
   CubicBezierObject,
   PresetDefinition,
 } from './types/public.js'
-import { parseBezierValue, serializeToCss } from './math/curve.js'
+import { parseBezierValue, sampleCurve1D, serializeToCss } from './math/curve.js'
 import { createInitialState } from './state/editor-state.js'
 import type { EditorState } from './state/editor-state.js'
 import {
@@ -458,19 +458,43 @@ export class BezierCurveEditor extends LitElement {
   }
 
   /**
-   * A dot travelling along the curve (progress preview). Pure SVG — the
-   * animation runs via CSS offset-path on the same path data as the curve.
+   * A dot travelling along the straight reference diagonal, its progress
+   * following the easing defined by the curve. Pure SVG/SMIL: the motion
+   * path is the linear diagonal, and keyPoints/keyTimes map eased progress
+   * (sampled from the curve) onto that path. Overshoot values are clamped
+   * into [0,1] — SMIL keyPoints must stay within the path length.
    */
   private _renderPreview(v: CubicBezierObject): unknown {
     if (!this.showPreview) return null
-    const x1 = v.x1 * VB
-    const y1 = (1 - v.y1) * VB
-    const x2 = v.x2 * VB
-    const y2 = (1 - v.y2) * VB
-    const d = `M 0 ${VB} C ${x1} ${y1}, ${x2} ${y2}, ${VB} 0`
+    const STEPS = 32
+    const keyTimes: string[] = []
+    const keyPoints: string[] = []
+    for (let i = 0; i <= STEPS; i++) {
+      const x = i / STEPS
+      // Invert the monotonic x(t) via bisection, then evaluate y at that
+      // parameter: y(x) is exactly the eased progress at time fraction x.
+      let lo = 0
+      let hi = 1
+      for (let k = 0; k < 24; k++) {
+        const mid = (lo + hi) / 2
+        if (sampleCurve1D(mid, 0, v.x1, v.x2, 1) < x) lo = mid
+        else hi = mid
+      }
+      const tStar = (lo + hi) / 2
+      const eased = sampleCurve1D(tStar, 0, v.y1, v.y2, 1)
+      keyTimes.push(x.toFixed(5))
+      keyPoints.push(Math.min(1, Math.max(0, eased)).toFixed(5))
+    }
     return svg`
       <circle class="preview-dot" r="3">
-        <animateMotion dur="1.6s" repeatCount="indefinite" path=${d} />
+        <animateMotion
+          dur="1.6s"
+          repeatCount="indefinite"
+          calcMode="linear"
+          path="M 0 ${VB} L ${VB} 0"
+          keyTimes=${keyTimes.join(';')}
+          keyPoints=${keyPoints.join(';')}
+        />
       </circle>
     `
   }
