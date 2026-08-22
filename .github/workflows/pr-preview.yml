@@ -123,7 +123,7 @@ jobs:
           # husky/lint-staged hooks (they lint source, not dist output)
           git -C publish commit --no-verify -m "Deploy preview pr-${PR_NUMBER} (${GITHUB_SHA})"
           test "$(git -C publish rev-parse HEAD^)" = "$(git rev-parse origin/gh-pages)"
-          git push origin "HEAD:gh-pages"
+          git push origin "HEAD:gh-pages" --force-with-lease=gh-pages
 
       - name: Remove preview
         if: steps.resolve.outputs.action == 'remove'
@@ -138,7 +138,7 @@ jobs:
           fi
           git -C publish commit --no-verify -m "Remove preview pr-${PR_NUMBER}"
           test "$(git -C publish rev-parse HEAD^)" = "$(git rev-parse origin/gh-pages)"
-          git push origin "HEAD:gh-pages"
+          git push origin "HEAD:gh-pages" --force-with-lease=gh-pages
 
       - name: Comment preview URL on PR
         if: steps.resolve.outputs.action == 'deploy'
