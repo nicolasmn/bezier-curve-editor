@@ -33,7 +33,7 @@ permissions:
 # Serialize publications to gh-pages together with the main-site deploy.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 env:
   PR_NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}

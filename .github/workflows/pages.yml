@@ -9,10 +9,12 @@ on:
 permissions:
   contents: write
 
-# Serialize all publications to the gh-pages branch (main site + PR previews).
+# Serialize publications to the gh-pages branch (main site + PR previews).
+# Queuing instead of cancelling: merge events fire push + closed simultaneously,
+# and a cancelled run would silently skip its publication.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
