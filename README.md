@@ -2,7 +2,7 @@
 
 A production-grade bezier curve editor as a native web component, built with
 [Lit](https://lit.dev). Ships framework adapters for React, Vue, Angular, and
-Svelte. 40+ built-in presets, CSS custom properties, `::part` hooks, keyboard
+Svelte. 39 built-in presets, CSS custom properties, `::part` hooks, keyboard
 accessible.
 
 [![CI](https://github.com/nicolasmn/bezier-curve-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/nicolasmn/bezier-curve-editor/actions/workflows/ci.yml)

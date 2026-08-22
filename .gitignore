@@ -37,10 +37,6 @@ Thumbs.db
 npm-debug.log*
 pnpm-debug.log*
 
-# Changeset temp
-.changeset/*.md
-!.changeset/config.json
-
 # Playwright
 test-results/
 playwright-report/
