@@ -47,6 +47,25 @@ importers:
         specifier: ^5.7.3
         version: 5.9.3
 
+  apps/demo:
+    dependencies:
+      '@bezier-curve-editor/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      lit:
+        specifier: ^3.2.1
+        version: 3.3.2
+    devDependencies:
+      '@bezier-curve-editor/tsconfig':
+        specifier: workspace:*
+        version: link:../../packages/tsconfig
+      typescript:
+        specifier: ^5.7.3
+        version: 5.9.3
+      vite:
+        specifier: ^6.0.0
+        version: 6.4.2(@types/node@22.19.17)(jiti@2.6.1)(yaml@2.8.4)
+
   apps/docs:
     devDependencies:
       vitepress:
