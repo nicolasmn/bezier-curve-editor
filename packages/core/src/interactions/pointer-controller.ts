@@ -36,7 +36,13 @@ export class PointerController implements ReactiveController {
     const handle = resolveHandle(e.target as Element)
     if (!handle) return
     e.preventDefault()
-    this.activeSvg?.setPointerCapture(e.pointerId)
+    // Capture can throw if the pointer already vanished (fast taps on touch,
+    // synthetic events) — the drag must still work via the global listeners.
+    try {
+      this.activeSvg?.setPointerCapture(e.pointerId)
+    } catch {
+      /* no active pointer with this id */
+    }
     this.activeHandle = handle
     this.host.onStateChange(startDrag(this.host.state, handle), null)
     globalThis.addEventListener('pointermove', this.onPointerMove)

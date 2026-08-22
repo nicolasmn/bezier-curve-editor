@@ -40,3 +40,6 @@ pnpm-debug.log*
 # Playwright
 test-results/
 playwright-report/
+
+# Vitest browser test screenshots (failures)
+**/__screenshots__/

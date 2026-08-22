@@ -81,7 +81,11 @@ export class KeyboardController implements ReactiveController {
       return
     }
 
-    const handle = state.focusedHandle
+    // Prefer the state mirror, but fall back to the live DOM focus:
+    // focusin delivery is not guaranteed in every environment (headless
+    // pages without document focus, restore-from-bfcache timing), and a
+    // focused handle must always stay operable.
+    const handle = state.focusedHandle ?? this.domFocusedHandle()
     if (!handle) return
 
     const delta = arrowDelta(e.key)
@@ -99,6 +103,13 @@ export class KeyboardController implements ReactiveController {
       'input',
     )
     this.nudged = true
+  }
+
+  /** Resolve the focused handle straight from the shadow root, if any. */
+  private domFocusedHandle(): 'p1' | 'p2' | null {
+    const root = shadowRootOf(this.el as HTMLElement) as { activeElement?: Element | null } | null
+    const active = root?.activeElement ?? null
+    return resolveHandle(active)
   }
   private onKeyUp = (e: KeyboardEvent): void => {
     if (!this.nudged || !arrowDelta(e.key)) return
