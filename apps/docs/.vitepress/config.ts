@@ -4,6 +4,15 @@ const base = (process.env['VITE_BASE'] ?? '/') as `/${string}/` | '/'
 
 export default defineConfig({
   base,
+  vue: {
+    template: {
+      compilerOptions: {
+        // Treat all dashed tags in markdown as native custom elements
+        // (e.g. <bezier-curve-editor>) instead of unresolved Vue components.
+        isCustomElement: (tag) => tag.includes('-'),
+      },
+    },
+  },
   title: 'Bezier Curve Editor',
   description: 'Bezier curve editor web component with Lit, framework adapters, and VitePress docs',
 
@@ -17,7 +26,13 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'API', link: '/api/component' },
       { text: 'Presets', link: '/guide/presets' },
-      { text: 'Live Demo', link: '/demo/' },
+      // External link — VitePress' SPA router would 404 on the non-app /demo/ page.
+      {
+        text: 'Live Demo',
+        link: '/demo/',
+        target: '_self',
+        rel: 'external',
+      },
       {
         text: 'Changelog',
         link: 'https://github.com/nicolasmn/bezier-curve-editor/releases',
