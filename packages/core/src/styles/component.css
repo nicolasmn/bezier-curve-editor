@@ -1,0 +1,158 @@
+/**
+ * Bezier Curve Editor — Component Layout
+ *
+ * Styles are encapsulated in the shadow DOM.
+ * Public surface: ::part() selectors and CSS custom properties (tokens.css).
+ */
+
+/* ─── Host ────────────────────────────────────────────────────────────────── */
+
+:host {
+  display: inline-block;
+  font-family: var(--bce-font-family);
+  font-size: var(--bce-font-size);
+  color: var(--bce-fg);
+  background: var(--bce-bg);
+  border: 1px solid var(--bce-border);
+  border-radius: var(--bce-radius);
+  overflow: hidden;
+  user-select: none;
+  -webkit-user-select: none;
+  outline: none;
+}
+
+:host(:focus-visible) {
+  outline: 2px solid var(--bce-accent);
+  outline-offset: 2px;
+}
+
+/* ─── Container ──────────────────────────────────────────────────────────── */
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ─── Canvas (SVG wrapper) ───────────────────────────────────────────────── */
+
+.canvas-wrap {
+  position: relative;
+  width: var(--bce-canvas-size);
+  height: var(--bce-canvas-size);
+  flex-shrink: 0;
+}
+
+.canvas-wrap svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  cursor: crosshair;
+}
+
+/* ─── Grid lines ─────────────────────────────────────────────────────────── */
+
+.grid-line {
+  stroke: var(--bce-grid-color);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+.grid-diagonal {
+  stroke: var(--bce-grid-color);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ─── Bezier path ────────────────────────────────────────────────────────── */
+
+.curve-path {
+  fill: none;
+  stroke: var(--bce-curve-color);
+  stroke-width: 2;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ─── Handle lines ───────────────────────────────────────────────────────── */
+
+.handle-line {
+  stroke: var(--bce-handle-line-color);
+  stroke-width: 1;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ─── Handles ────────────────────────────────────────────────────────────── */
+
+.handle {
+  cursor: grab;
+  touch-action: none;
+}
+
+.handle:active {
+  cursor: grabbing;
+}
+
+.handle circle {
+  fill: var(--bce-handle-color);
+  stroke: var(--bce-handle-border);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  transition: r var(--bce-transition);
+}
+
+.handle:hover circle,
+.handle--focused circle {
+  r: 7;
+}
+
+/* ─── Toolbar ────────────────────────────────────────────────────────────── */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 6px 8px;
+  background: var(--bce-bg-subtle);
+  border-top: 1px solid var(--bce-border);
+}
+
+/* ─── Value output ───────────────────────────────────────────────────────── */
+
+.value-output {
+  flex: 1;
+  font-family: var(--bce-font-family);
+  font-size: var(--bce-font-size);
+  color: var(--bce-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ─── Copy button ────────────────────────────────────────────────────────── */
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 6px;
+  border: 1px solid var(--bce-border);
+  border-radius: calc(var(--bce-radius) - 2px);
+  background: var(--bce-bg);
+  color: var(--bce-fg-muted);
+  font-size: var(--bce-font-size);
+  cursor: pointer;
+  transition: color var(--bce-transition), border-color var(--bce-transition);
+  white-space: nowrap;
+}
+
+.copy-btn:hover {
+  color: var(--bce-accent);
+  border-color: var(--bce-accent);
+}
+
+.copy-btn:active {
+  opacity: 0.7;
+}

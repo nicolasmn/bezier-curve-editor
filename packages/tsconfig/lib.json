@@ -3,8 +3,6 @@
   "extends": "./base.json",
   "display": "Lib",
   "compilerOptions": {
-    "composite": true,
-    "declarationDir": "./dist/types",
-    "rootDir": "./src"
+    "composite": true
   }
 }
