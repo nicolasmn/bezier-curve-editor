@@ -1,18 +1,24 @@
 # bezier-curve-editor
 
-A production-grade bezier curve editor as a native web component, built with [Lit](https://lit.dev). Ships framework adapters for React, Vue, Angular, and Svelte. 40+ built-in presets, CSS custom properties, `::part` hooks, keyboard accessible.
+A production-grade bezier curve editor as a native web component, built with
+[Lit](https://lit.dev). Ships framework adapters for React, Vue, Angular, and
+Svelte. 40+ built-in presets, CSS custom properties, `::part` hooks, keyboard
+accessible.
 
 [![CI](https://github.com/nicolasmn/bezier-curve-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/nicolasmn/bezier-curve-editor/actions/workflows/ci.yml)
 
+**[📖 Documentation](https://nicolasmn.github.io/bezier-curve-editor/)** ·
+**[🎛️ Live Demo](https://nicolasmn.github.io/bezier-curve-editor/demo/)**
+
 ## Packages
 
-| Package | Description |
-|---|---|
-| [`@bezier-curve-editor/core`](./packages/core) | Lit web component — the real thing |
-| [`@bezier-curve-editor/react`](./packages/react) | React adapter |
-| [`@bezier-curve-editor/vue`](./packages/vue) | Vue adapter |
-| [`@bezier-curve-editor/angular`](./packages/angular) | Angular adapter |
-| [`@bezier-curve-editor/svelte`](./packages/svelte) | Svelte adapter |
+| Package                                              | Description                        |
+| ---------------------------------------------------- | ---------------------------------- |
+| [`@bezier-curve-editor/core`](./packages/core)       | Lit web component — the real thing |
+| [`@bezier-curve-editor/react`](./packages/react)     | React adapter                      |
+| [`@bezier-curve-editor/vue`](./packages/vue)         | Vue adapter                        |
+| [`@bezier-curve-editor/angular`](./packages/angular) | Angular adapter                    |
+| [`@bezier-curve-editor/svelte`](./packages/svelte)   | Svelte adapter                     |
 
 ## Quick Start
 
@@ -25,7 +31,9 @@ npm install @bezier-curve-editor/core
   import '@bezier-curve-editor/core'
 </script>
 
-<bezier-curve-editor value="cubic-bezier(0.42, 0, 0.58, 1)"></bezier-curve-editor>
+<bezier-curve-editor
+  value="cubic-bezier(0.42, 0, 0.58, 1)"
+></bezier-curve-editor>
 ```
 
 ## Local Development
@@ -75,11 +83,13 @@ When changing a public API, run:
 pnpm changeset
 ```
 
-Commit the generated `.changeset/*.md` with your PR. The release workflow handles versioning and publishing automatically.
+Commit the generated `.changeset/*.md` with your PR. The release workflow
+handles versioning and publishing automatically.
 
 ## Documentation
 
-Docs live at `apps/docs/` and deploy to GitHub Pages automatically on push to `main`.
+Docs live at `apps/docs/` and deploy to GitHub Pages automatically on push to
+`main`.
 
 To run locally:
 
