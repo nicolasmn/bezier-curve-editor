@@ -18,7 +18,7 @@ bezier-curve-editor {
 | `--bce-grid-color`        | `rgba(0,0,0,0.08)`           | Grid line color                                                         |
 | `--bce-curve-color`       | `var(--bce-accent)`          | Bezier curve path color                                                 |
 | `--bce-curve-width`       | `2`                          | Bezier curve stroke width                                               |
-| `--bce-handle-size`       | `10`                         | Handle diameter (viewBox units; hover radius derives from it)           |
+| `--bce-handle-size`       | `10px`                       | Handle diameter (CSS length; hover/focus radius derives from it)        |
 | `--bce-handle-color`      | `var(--bce-accent)`          | Handle fill color                                                       |
 | `--bce-handle-border`     | `#fff`                       | Handle border/outline color                                             |
 | `--bce-grid-subdivisions` | `4`                          | Grid subdivisions per axis (see also the `grid-subdivisions` attribute) |

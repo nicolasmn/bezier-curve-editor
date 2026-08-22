@@ -142,7 +142,7 @@ export class BezierCurveEditor extends LitElement {
     .handle:focus-visible circle {
       stroke: var(--bce-accent, #4f6ef7);
       stroke-width: 3;
-      r: 7;
+      r: 7px;
     }
     .handle circle {
       fill: var(--bce-handle-color, var(--bce-accent, #4f6ef7));
@@ -155,7 +155,11 @@ export class BezierCurveEditor extends LitElement {
     }
     .handle--focused circle,
     .handle:hover circle {
-      r: calc(var(--bce-handle-size, 10) * 0.7);
+      /* Fallback MUST carry a unit: a bare number is an invalid <length> for
+         the CSS r property. WebKit resolves the invalid value to the initial
+         value (r = 0), which makes the handle invisible and un-hittable —
+         Chromium instead keeps the r="5" presentation attribute. */
+      r: calc(var(--bce-handle-size, 10px) * 0.7);
     }
     .toolbar {
       display: flex;
