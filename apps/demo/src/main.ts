@@ -10,6 +10,8 @@ interface EditorElement extends HTMLElement {
   readonly: boolean
   disabled: boolean
   showGrid: boolean
+  showPreview: boolean
+  gridSubdivisions: number
   snap: number
   theme: string
 }
@@ -75,6 +77,12 @@ document.getElementById('ctl-disabled')!.addEventListener('change', (e) => {
 })
 document.getElementById('ctl-grid')!.addEventListener('change', (e) => {
   editor.showGrid = (e.target as HTMLInputElement).checked
+})
+document.getElementById('ctl-preview')!.addEventListener('change', (e) => {
+  editor.showPreview = (e.target as HTMLInputElement).checked
+})
+document.getElementById('ctl-subdiv')!.addEventListener('change', (e) => {
+  editor.gridSubdivisions = Number((e.target as HTMLSelectElement).value)
 })
 document.getElementById('ctl-snap')!.addEventListener('change', (e) => {
   editor.snap = Number((e.target as HTMLSelectElement).value)
