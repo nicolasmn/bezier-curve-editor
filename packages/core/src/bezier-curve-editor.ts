@@ -24,8 +24,6 @@ import { handleAriaLabel } from './utils/a11y.js'
 const VB = 100
 /** Extra viewBox margin (in curve units) added around the [0,1]² area. */
 const BASE_PAD = 12
-/** Base handle radius in viewBox units (hover size scales from --bce-handle-size). */
-const HR = 5
 /** Default grid subdivisions — mirrors the --bce-grid-subdivisions token. */
 const GRID_DEFAULT = 4
 
@@ -40,7 +38,10 @@ export class BezierCurveEditor extends LitElement {
       background: var(--bce-bg, #ffffff);
       border: 1px solid var(--bce-border, #e0e0e0);
       border-radius: var(--bce-radius, 8px);
-      overflow: hidden;
+      /* NOT overflow:hidden — handles dragged outside the canvas must stay
+         visible (they paint beyond the host box). The toolbar clips its own
+         background to the host radius instead. */
+      overflow: visible;
       user-select: none;
       -webkit-user-select: none;
       outline: none;
@@ -101,6 +102,9 @@ export class BezierCurveEditor extends LitElement {
       width: 100%;
       height: 100%;
       cursor: crosshair;
+      /* Handles outside the [0,1]² area paint beyond the svg box instead of
+         being clipped or forcing a viewBox rescale. */
+      overflow: visible;
     }
     .grid-line {
       stroke: var(--bce-grid-color, #e8e8e8);
@@ -161,6 +165,9 @@ export class BezierCurveEditor extends LitElement {
       padding: 6px 8px;
       background: var(--bce-bg-subtle, #f5f5f5);
       border-top: 1px solid var(--bce-border, #e0e0e0);
+      /* Host no longer clips overflow (handles may paint outside), so the
+         toolbar clips its own background to the host's bottom radius. */
+      border-radius: 0 0 var(--bce-radius, 8px) var(--bce-radius, 8px);
     }
     .value-output {
       flex: 1;
@@ -385,22 +392,13 @@ export class BezierCurveEditor extends LitElement {
   // ─── Render helpers ───────────────────────────────────────────────────────
 
   /**
-   * ViewBox with padding around the [0,1]² curve area. The padding grows just
-   * enough to keep overshooting handles fully inside the visible canvas, so
-   * they remain grabbable even at y = -0.56 or y = 1.56.
+   * Fixed viewBox: the [0,1]² curve area plus a constant gutter (BASE_PAD).
+   * The editor NEVER rescales — its size and zoom level stay constant at all
+   * times. Handles pulled outside the curve area simply render outside the
+   * canvas (svg overflow: visible) instead of forcing a zoom-out.
    */
-  private _viewBox(v: CubicBezierObject): { min: number; size: number } {
-    const overshootY = Math.max(
-      Math.abs(Math.min(v.y1, 0)),
-      Math.max(v.y1 - 1, 0),
-      Math.abs(Math.min(v.y2, 0)),
-      Math.max(v.y2 - 1, 0),
-    )
-    // Convert the worst overshoot (in bezier units) into viewBox units and add
-    // a little headroom for the handle radius. BASE_PAD keeps a small gutter
-    // even for in-bounds curves so edge handles aren't clipped in half.
-    const pad = Math.max(BASE_PAD, HR + 2 + overshootY * VB)
-    return { min: -pad, size: VB + pad * 2 }
+  private _viewBox(): { min: number; size: number } {
+    return { min: -BASE_PAD, size: VB + BASE_PAD * 2 }
   }
 
   private _renderGrid() {
@@ -485,7 +483,7 @@ export class BezierCurveEditor extends LitElement {
   override render() {
     const v = this._state.value
     const cssVal = serializeToCss(v, this.precision)
-    const vb = this._viewBox(v)
+    const vb = this._viewBox()
     return html`
       <div part="container" class="container">
         <div class="canvas-wrap">

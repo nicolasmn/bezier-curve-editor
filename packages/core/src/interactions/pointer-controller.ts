@@ -3,6 +3,9 @@ import type { EditorState, ActiveHandle } from '../state/editor-state.js'
 import { startDrag, endDrag, setHandle } from '../state/reducers.js'
 import { resolveHandle } from '../utils/dom.js'
 
+/** Curve-space size of the svg viewBox ([0,1]² scaled by 100, see element). */
+const VB_UNITS = 100
+
 export interface PointerControllerHost extends ReactiveControllerHost {
   state: EditorState
   onStateChange(next: EditorState, emit: 'input' | 'change' | null): void
@@ -67,14 +70,19 @@ export class PointerController implements ReactiveController {
     this.removeListeners()
   }
 
+  /**
+   * Screen → curve coordinates. Must go through the svg CTM so the viewBox
+   * (including its gutter) is respected — a naive linear map of the element
+   * box onto [0,1]² skews the handle by up to the gutter width and breaks
+   * down entirely for handles outside the canvas box.
+   */
   private svgPoint(e: PointerEvent): { x: number; y: number } | null {
     const svg = this.activeSvg ?? this.host.getSvgElement()
     if (!svg) return null
-    const rect = svg.getBoundingClientRect()
-    return {
-      x: (e.clientX - rect.left) / rect.width,
-      y: 1 - (e.clientY - rect.top) / rect.height,
-    }
+    const ctm = svg.getScreenCTM()
+    if (!ctm) return null
+    const loc = new DOMPoint(e.clientX, e.clientY).matrixTransform(ctm.inverse())
+    return { x: loc.x / VB_UNITS, y: 1 - loc.y / VB_UNITS }
   }
 
   private removeListeners(): void {
