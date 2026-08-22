@@ -27,6 +27,31 @@ const BASE_PAD = 12
 /** Default grid subdivisions — mirrors the --bce-grid-subdivisions token. */
 const GRID_DEFAULT = 4
 
+/**
+ * `<bezier-curve-editor>` — interactive cubic-bezier() easing curve editor.
+ *
+ * @fires {CustomEvent<BezierChangeDetail>} input - Live value updates during a pointer drag or keyboard nudge.
+ * @fires {CustomEvent<BezierChangeDetail>} change - Committed value on pointer release or keyboard key-up.
+ * @fires {CustomEvent<BezierPresetChangeDetail>} presetchange - The active preset changed.
+ * @fires {CustomEvent<{cssValue: string}>} copy - The copy button wrote the CSS value to the clipboard.
+ * @fires {CustomEvent} invalid - A value assignment failed to parse.
+ *
+ * @cssprop [--bce-canvas-size=240px] - Canvas width/height.
+ * @cssprop [--bce-font-family=...] - Toolbar font family.
+ * @cssprop [--bce-font-size=0.75rem] - Toolbar font size.
+ * @cssprop [--bce-accent=#4f6ef7] - Accent color (curve, handles, focus ring).
+ * @cssprop [--bce-curve-width=2] - Curve stroke width.
+ * @cssprop [--bce-handle-size=10px] - Handle diameter (hover/focus radius derives from it).
+ * @cssprop [--bce-radius=8px] - Host corner radius.
+ *
+ * @csspart container - Outer flex container.
+ * @csspart grid - The svg canvas.
+ * @csspart curve - The bezier path.
+ * @csspart handle - A handle group (also `handle-p1` / `handle-p2`).
+ * @csspart toolbar - Value output + copy button bar.
+ * @csspart value-output - The serialized CSS value.
+ * @csspart button - The copy button.
+ */
 @customElement('bezier-curve-editor')
 export class BezierCurveEditor extends LitElement {
   static override styles = css`
