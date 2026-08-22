@@ -3,21 +3,20 @@ name: Deploy Docs to GitHub Pages
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
-# Grant GITHUB_TOKEN the permissions needed for Pages deployment
+# GITHUB_TOKEN needs write access to push the built site to gh-pages.
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
-# Allow only one concurrent deploy; cancel in-progress runs
+# Serialize all publications to the gh-pages branch (main site + PR previews).
 concurrency:
   group: pages
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build docs
+  deploy:
+    name: Build & publish main site
     runs-on: ubuntu-latest
 
     steps:
@@ -52,24 +51,23 @@ jobs:
       - name: Copy demo into docs output
         run: cp -r apps/demo/dist apps/docs/.vitepress/dist/demo
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
         with:
-          path: apps/docs/.vitepress/dist
+          ref: gh-pages
+          path: publish
 
-  deploy:
-    name: Deploy to Pages
-    needs: build
-    runs-on: ubuntu-latest
-
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish main site (preserving PR previews)
+        run: |
+          rsync -a --delete --exclude '/pr-preview' apps/docs/.vitepress/dist/ publish/
+          touch publish/.nojekyll
+          cd publish
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to publish"
+            exit 0
+          fi
+          git commit -m "Deploy main site ${GITHUB_SHA}"
+          git push
