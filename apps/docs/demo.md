@@ -1,6 +1,6 @@
 ---
 title: Live Demo
-layout: page
+aside: false
 ---
 
 # Live Demo

@@ -1,0 +1,23 @@
+/*
+ * Global style overrides for the docs theme.
+ */
+
+/*
+ * Navbar: the default theme shows the full menu from 768px up AND keeps the
+ * "..." extra flyout until 1280px. With six nav items that pair overflows the
+ * viewport between 768–959px. Collapse to the hamburger screen below 960px
+ * instead (the hamburger screen includes the menu links plus the appearance
+ * and social controls, so nothing is lost).
+ */
+@media (max-width: 959px) {
+  .VPNavBarMenu,
+  .VPNavBarExtra {
+    display: none !important;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 959px) {
+  .VPNavBarHamburger {
+    display: flex;
+  }
+}

@@ -152,9 +152,13 @@ onMounted(async () => {
   gap: 12px;
   align-items: center;
   flex-shrink: 0;
+  width: min(300px, 100%);
+  container-type: inline-size;
 }
 .bce-stage bezier-curve-editor {
-  --bce-canvas-size: min(300px, calc(100vw - 96px));
+  /* Sized against the stage container (container query units), so the canvas
+     always fits its column — no viewport math tied to one layout's paddings. */
+  --bce-canvas-size: min(300px, 100cqw);
 }
 .bce-panel {
   flex: 1;
