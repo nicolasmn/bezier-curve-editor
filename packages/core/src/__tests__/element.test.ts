@@ -420,4 +420,29 @@ describe('preset picker', () => {
     expect(JSON.stringify(el.value)).toBe(before)
     expect(fired).toBe(false)
   })
+
+  it('keeps a constant width regardless of value string length or picker state', async () => {
+    const el = await mount('preset-picker')
+    el.style.setProperty('--bce-canvas-size', '300px')
+    await nextFrame()
+    const width = () => el.getBoundingClientRect().width
+
+    const withDefault = width()
+
+    // Extreme long value (high precision, overshoot coords) must not stretch
+    // the element — the toolbar pins to the canvas size and the value output
+    // ellipsizes instead.
+    el.precision = 8
+    el.value = [0.12345678, -0.43218765, 1.23456789, 1.98765432]
+    await nextFrame()
+    const withLongValue = width()
+
+    // Picker disabled → same width
+    el.showPresetPicker = false
+    await nextFrame()
+    const withoutPicker = width()
+
+    expect(withLongValue).toBe(withDefault)
+    expect(withoutPicker).toBe(withDefault)
+  })
 })

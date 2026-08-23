@@ -193,6 +193,12 @@ export class BezierCurveEditor extends LitElement {
       justify-content: space-between;
       gap: 4px;
       padding: 6px 8px;
+      /* Match the canvas width exactly: the toolbar must never contribute to
+         the host's intrinsic size (the host is inline-block and sizes itself
+         from its widest child — a long cubic-bezier() string or the preset
+         picker would otherwise stretch the whole component). */
+      box-sizing: border-box;
+      width: var(--bce-canvas-size, 240px);
       background: var(--bce-bg-subtle, #f5f5f5);
       border-top: 1px solid var(--bce-border, #e0e0e0);
       /* Host no longer clips overflow (handles may paint outside), so the
@@ -201,6 +207,10 @@ export class BezierCurveEditor extends LitElement {
     }
     .value-output {
       flex: 1;
+      /* Without this floor the flex item cannot shrink below the string's
+         min-content width (white-space: nowrap), so digit changes while
+         dragging resize the entire element instead of ellipsizing. */
+      min-width: 0;
       font-family: var(--bce-font-family, ui-monospace, monospace);
       font-size: var(--bce-font-size, 0.75rem);
       color: var(--bce-fg, #1a1a1a);
@@ -241,8 +251,10 @@ export class BezierCurveEditor extends LitElement {
       border-radius: calc(var(--bce-radius, 8px) - 2px);
       cursor: pointer;
       max-width: 140px;
+      /* Shrinkable with an ellipsized label — a fixed width here would crowd
+         the value output out of the toolbar on narrow embeds. */
+      min-width: 0;
       white-space: nowrap;
-      flex-shrink: 0;
     }
     .preset-picker:disabled {
       opacity: 0.5;
