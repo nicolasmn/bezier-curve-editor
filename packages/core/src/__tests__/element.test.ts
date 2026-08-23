@@ -213,9 +213,9 @@ describe('events', () => {
     expect(el.selectedPreset).toBe('ease-in-out')
   })
 
-  it('emits copy with serialized css', async () => {
+  it('emits bce-copy with serialized css', async () => {
     let detail: { cssValue?: string } | undefined
-    el.addEventListener('copy', (e) => {
+    el.addEventListener('bce-copy', (e) => {
       detail = (e as unknown as CustomEvent).detail as { cssValue?: string }
     })
     el.shadowRoot!.querySelector<HTMLButtonElement>('.copy-btn')!.click()

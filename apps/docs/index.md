@@ -13,7 +13,7 @@ hero:
       link: /guide/getting-started
     - theme: alt
       text: Live Demo →
-      link: /demo/
+      link: /demo
     - theme: alt
       text: GitHub
       link: https://github.com/nicolasmn/bezier-curve-editor
@@ -40,10 +40,6 @@ features:
 <div class="home-demo">
   <div class="home-demo-stage">
     <HomeDemo />
-  </div>
-  <div class="home-demo-side">
-    <p class="home-hint">Live component — drag the handles or use arrow keys.</p>
-    <a class="home-more" href="/demo/">All features in the Live Demo →</a>
   </div>
 </div>
 
@@ -85,13 +81,6 @@ Try it in plain HTML — no framework, no build step:
   margin: 0 auto;
   padding: 0 24px;
 }
-.home-demo-side { min-width: 0; }
-.home-hint {
-  font-size: 0.85rem;
-  opacity: 0.65;
-  margin-top: 0;
-}
-.home-more { font-weight: 600; font-size: 0.9rem; }
 </style>
 <style>
 .home-hero-editor {

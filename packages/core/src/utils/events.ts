@@ -31,7 +31,10 @@ export function emitPresetChange(
 }
 
 export function emitCopy(host: EventTarget, cssValue: string): void {
+  // Named `bce-copy` to avoid colliding with the native clipboard
+  // ClipboardEvent('copy') — both would be bubbles+composed and
+  // indistinguishable for document-level listeners.
   host.dispatchEvent(
-    new CustomEvent('copy', { detail: { cssValue }, bubbles: true, composed: true }),
+    new CustomEvent('bce-copy', { detail: { cssValue }, bubbles: true, composed: true }),
   )
 }

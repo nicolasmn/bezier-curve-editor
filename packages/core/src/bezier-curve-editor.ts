@@ -34,7 +34,7 @@ const GRID_DEFAULT = 4
  * @fires {CustomEvent<BezierChangeDetail>} input - Live value updates during a pointer drag or keyboard nudge.
  * @fires {CustomEvent<BezierChangeDetail>} change - Committed value on pointer release or keyboard key-up.
  * @fires {CustomEvent<BezierPresetChangeDetail>} presetchange - The active preset changed.
- * @fires {CustomEvent<{cssValue: string}>} copy - The copy button wrote the CSS value to the clipboard.
+ * @fires {CustomEvent<{cssValue: string}>} bce-copy - The copy button wrote the CSS value to the clipboard.
  * @fires {CustomEvent} invalid - A value assignment failed to parse.
  *
  * @cssprop [--bce-canvas-size=240px] - Canvas width/height.
