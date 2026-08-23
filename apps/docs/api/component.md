@@ -62,17 +62,18 @@ import '@bezier-curve-editor/core'
 
 ## CSS Parts
 
-| Part           | Element    | Description                               |
-| -------------- | ---------- | ----------------------------------------- |
-| `container`    | `<div>`    | Outer wrapper                             |
-| `grid`         | `<svg>`    | SVG canvas including grid, curve, handles |
-| `curve`        | `<path>`   | Bezier curve path                         |
-| `handle`       | `<g>`      | Both handle groups                        |
-| `handle-p1`    | `<g>`      | Control point 1 handle                    |
-| `handle-p2`    | `<g>`      | Control point 2 handle                    |
-| `toolbar`      | `<div>`    | Bottom toolbar bar                        |
-| `value-output` | `<span>`   | CSS string display                        |
-| `button`       | `<button>` | Copy button                               |
+| Part            | Element    | Description                                  |
+| --------------- | ---------- | -------------------------------------------- |
+| `container`     | `<div>`    | Outer wrapper                                |
+| `grid`          | `<svg>`    | SVG canvas including grid, curve, handles    |
+| `curve`         | `<path>`   | Bezier curve path                            |
+| `handle`        | `<g>`      | Both handle groups                           |
+| `handle-p1`     | `<g>`      | Control point 1 handle                       |
+| `handle-p2`     | `<g>`      | Control point 2 handle                       |
+| `toolbar`       | `<div>`    | Bottom toolbar bar                           |
+| `value-output`  | `<span>`   | CSS string display                           |
+| `button`        | `<button>` | Copy button                                  |
+| `preset-picker` | `<select>` | Preset dropdown (opt-in via `preset-picker`) |
 
 See [CSS Parts reference](/api/css-parts) for styling examples.
 
