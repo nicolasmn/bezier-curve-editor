@@ -26,13 +26,7 @@ export default defineConfig({
       { text: 'Guide', link: '/guide/getting-started' },
       { text: 'API', link: '/api/component' },
       { text: 'Presets', link: '/guide/presets' },
-      // External link — VitePress' SPA router would 404 on the non-app /demo/ page.
-      {
-        text: 'Live Demo',
-        link: '/demo/',
-        target: '_self',
-        rel: 'external',
-      },
+      { text: 'Live Demo', link: '/demo' },
       {
         text: 'Changelog',
         link: 'https://github.com/nicolasmn/bezier-curve-editor/releases',
