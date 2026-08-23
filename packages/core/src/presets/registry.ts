@@ -347,6 +347,39 @@ export function getPreset(id: string): PresetDefinition | undefined {
   return PRESETS.find((p) => p.id === id)
 }
 
+/** Display order and human labels for preset categories (picker UI). */
+const CATEGORY_ORDER: Array<{ category: PresetCategory; label: string }> = [
+  { category: 'standard', label: 'Standard CSS' },
+  { category: 'sine', label: 'Sine' },
+  { category: 'quad', label: 'Quad' },
+  { category: 'cubic', label: 'Cubic' },
+  { category: 'quart', label: 'Quart' },
+  { category: 'quint', label: 'Quint' },
+  { category: 'expo', label: 'Expo' },
+  { category: 'circ', label: 'Circ' },
+  { category: 'back', label: 'Back (overshoot)' },
+  { category: 'emphasis', label: 'Emphasis' },
+  { category: 'utility', label: 'Utility' },
+]
+
+export interface PresetGroup {
+  category: PresetCategory
+  label: string
+  presets: PresetDefinition[]
+}
+
+/**
+ * All presets grouped by category, in display order.
+ * Empty categories are omitted — safe to iterate for optgroups.
+ */
+export function getPresetGroups(): PresetGroup[] {
+  return CATEGORY_ORDER.map(({ category, label }) => ({
+    category,
+    label,
+    presets: PRESETS.filter((p) => p.category === category),
+  })).filter((g) => g.presets.length > 0)
+}
+
 /** Get all presets belonging to a category */
 export function getPresetsByCategory(category: PresetCategory): PresetDefinition[] {
   return PRESETS.filter((p) => p.category === category)

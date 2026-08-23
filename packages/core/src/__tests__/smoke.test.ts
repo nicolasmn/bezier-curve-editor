@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { parseBezierValue, serializeToCss, isOvershoot, DEFAULT_VALUE } from '../math/curve.js'
 import { createInitialState } from '../state/editor-state.js'
 import { setHandle, reset, selectPreset } from '../state/reducers.js'
-import { PRESETS } from '../presets/registry.js'
+import { PRESETS, getPresetGroups } from '../presets/registry.js'
 
 describe('parseBezierValue', () => {
   it('parses a 4-tuple', () => {
@@ -107,5 +107,23 @@ describe('reducers', () => {
 
   it('DEFAULT_VALUE is CSS ease', () => {
     expect(DEFAULT_VALUE).toEqual({ x1: 0.25, y1: 0.1, x2: 0.25, y2: 1 })
+  })
+})
+
+describe('getPresetGroups', () => {
+  it('returns groups in display order with labels, no empty groups', () => {
+    const groups = getPresetGroups()
+    expect(groups.length).toBeGreaterThan(0)
+    for (const g of groups) {
+      expect(g.presets.length).toBeGreaterThan(0)
+      expect(g.label.length).toBeGreaterThan(0)
+      for (const p of g.presets) expect(p.category).toBe(g.category)
+    }
+    // Order follows CATEGORY_ORDER: standard first, utility last
+    expect(groups[0]!.category).toBe('standard')
+    expect(groups.at(-1)!.category).toBe('utility')
+    // All presets covered exactly once
+    const total = groups.reduce((n, g) => n + g.presets.length, 0)
+    expect(total).toBe(39)
   })
 })

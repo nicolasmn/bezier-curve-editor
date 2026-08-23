@@ -4,6 +4,28 @@ The editor ships with 39 built-in presets organized by category.
 
 ## Using Presets
 
+### Built-in preset picker
+
+The editor can render a preset dropdown directly in its toolbar, grouped by
+category and with a curve preview in every option:
+
+```html
+<bezier-curve-editor preset-picker></bezier-curve-editor>
+```
+
+```js
+el.showPresetPicker = true
+```
+
+The dropdown uses the native `<select>` with `optgroup` grouping. Where the
+browser supports `appearance: base-select` (Chrome/Edge 134+), each option shows
+a mini preview of its curve and the dropdown is fully styled with the editor's
+CSS tokens; elsewhere it falls back to the plain native select.
+
+Selecting a preset applies it (and fires `presetchange`). As soon as a handle is
+dragged — or the value is set programmatically — the value no longer matches any
+preset exactly, and the picker switches to "Custom".
+
 ```html
 <bezier-curve-editor selected-preset="ease-out"></bezier-curve-editor>
 ```

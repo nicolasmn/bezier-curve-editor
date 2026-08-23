@@ -338,3 +338,111 @@ describe('preview dot', () => {
     expect(svgOf(el).querySelector('.preview-dot')).toBeNull()
   })
 })
+
+describe('preset picker', () => {
+  it('does not render by default', async () => {
+    const el = await mount()
+    expect(el.shadowRoot!.querySelector('.preset-picker')).toBeNull()
+  })
+
+  it('renders a grouped select when enabled', async () => {
+    const el = await mount('preset-picker')
+    const select = el.shadowRoot!.querySelector<HTMLSelectElement>('.preset-picker')!
+    expect(select).toBeTruthy()
+    expect(select.getAttribute('aria-label')).toBe('Preset')
+
+    const groups = select.querySelectorAll('optgroup')
+    expect(groups.length).toBeGreaterThanOrEqual(10)
+
+    // All presets + the Custom placeholder
+    const options = select.querySelectorAll('option')
+    expect(options.length).toBe(39 + 1)
+  })
+
+  it('shows "Custom" as selected initially and after manual drags', async () => {
+    const el = await mount('preset-picker')
+    const select = el.shadowRoot!.querySelector<HTMLSelectElement>('.preset-picker')!
+
+    // Pick a preset programmatically → picker mirrors it
+    el.selectPreset('ease-in-out')
+    await nextFrame()
+    expect(select.value).toBe('ease-in-out')
+
+    // Drag a handle → selectedPreset cleared → picker back to Custom
+    const circle = circleOf(el, 'p1')
+    const r = circle.getBoundingClientRect()
+    await drag(
+      el,
+      [
+        { x: r.left + r.width / 2, y: r.top + r.height / 2 },
+        { x: r.left + 40, y: r.top },
+      ],
+      { pressOn: circle },
+    )
+    expect(el.selectedPreset).toBeNull()
+    await nextFrame()
+    expect(select.value).toBe('')
+  })
+
+  it('applies preset on selection change', async () => {
+    const el = await mount('preset-picker')
+    let fired: string | null = null
+    el.addEventListener('presetchange', (e) => {
+      fired = ((e as CustomEvent).detail as { preset?: { id?: string } }).preset?.id ?? null
+    })
+
+    const select = el.shadowRoot!.querySelector<HTMLSelectElement>('.preset-picker')!
+    const opts = Array.from(select.options)
+    const idx = opts.findIndex((o) => o.value === 'expo-out')
+    select.selectedIndex = idx
+    select.value = 'expo-out'
+    select.dispatchEvent(new Event('change', { bubbles: true, composed: true }))
+    await nextFrame()
+
+    expect(fired).toBe('expo-out')
+    expect(el.value).toEqual({ x1: 0.16, y1: 1, x2: 0.3, y2: 1 })
+    // Picker reflects the applied state
+    expect(select.value).toBe('expo-out')
+  })
+
+  it('ignores selecting the Custom placeholder', async () => {
+    const el = await mount('preset-picker')
+    let fired = false
+    el.addEventListener('presetchange', () => {
+      fired = true
+    })
+
+    const before = JSON.stringify(el.value)
+    const select = el.shadowRoot!.querySelector<HTMLSelectElement>('.preset-picker')!
+    select.value = ''
+    select.dispatchEvent(new Event('change', { bubbles: true, composed: true }))
+    await nextFrame()
+    expect(JSON.stringify(el.value)).toBe(before)
+    expect(fired).toBe(false)
+  })
+
+  it('keeps a constant width regardless of value string length or picker state', async () => {
+    const el = await mount('preset-picker')
+    el.style.setProperty('--bce-canvas-size', '300px')
+    await nextFrame()
+    const width = () => el.getBoundingClientRect().width
+
+    const withDefault = width()
+
+    // Extreme long value (high precision, overshoot coords) must not stretch
+    // the element — the toolbar pins to the canvas size and the value output
+    // ellipsizes instead.
+    el.precision = 8
+    el.value = [0.12345678, -0.43218765, 1.23456789, 1.98765432]
+    await nextFrame()
+    const withLongValue = width()
+
+    // Picker disabled → same width
+    el.showPresetPicker = false
+    await nextFrame()
+    const withoutPicker = width()
+
+    expect(withLongValue).toBe(withDefault)
+    expect(withoutPicker).toBe(withDefault)
+  })
+})
