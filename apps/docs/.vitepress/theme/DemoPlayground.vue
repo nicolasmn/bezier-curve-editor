@@ -10,11 +10,12 @@
         :disabled="disabled"
         :show-grid="showGrid"
         :show-preview="showPreview"
+        :preset-picker="showPresetPicker || null"
         :grid-subdivisions="gridSubdivisions"
         :snap="snap"
         @input="onManualInput"
         @change="logEvent"
-        @presetchange="logEvent"
+        @presetchange="onPresetChange"
         @bce-copy="logEvent"
         @invalid="logEvent"
       ></bezier-curve-editor>
@@ -24,13 +25,15 @@
       <details open>
         <summary>Properties</summary>
         <div class="bce-controls">
-          <label>Borders
+          <label
+            >Borders
             <select v-model="bounds">
               <option value="css">CSS [0,1]²</option>
               <option value="free">Free</option>
             </select>
           </label>
-          <label>Snapping
+          <label
+            >Snapping
             <select v-model.number="snap">
               <option :value="0">Off</option>
               <option :value="0.05">0.05</option>
@@ -38,7 +41,8 @@
               <option :value="0.25">0.25</option>
             </select>
           </label>
-          <label>Grid subdivisions
+          <label
+            >Grid subdivisions
             <select v-model.number="gridSubdivisions">
               <option :value="2">2</option>
               <option :value="4">4</option>
@@ -50,18 +54,16 @@
           <label><input v-model="readonly" type="checkbox" /> Read-only</label>
           <label><input v-model="disabled" type="checkbox" /> Disabled</label>
           <label><input v-model="showGrid" type="checkbox" /> Grid</label>
+          <label><input v-model="showPresetPicker" type="checkbox" /> Preset picker</label>
           <label><input v-model="showPreview" type="checkbox" /> Preview dot</label>
         </div>
       </details>
 
       <details open>
-        <summary>Presets <span>({{ filteredPresets.length }})</span></summary>
-        <input
-          v-model="query"
-          class="bce-search"
-          type="search"
-          placeholder="Filter presets…"
-        />
+        <summary>
+          Presets <span>({{ filteredPresets.length }})</span>
+        </summary>
+        <input v-model="query" class="bce-search" type="search" placeholder="Filter presets…" />
         <ul class="bce-presets" role="listbox" aria-label="Presets">
           <li
             v-for="p in filteredPresets"
@@ -101,6 +103,7 @@ const readonly = ref(false)
 const disabled = ref(false)
 const showGrid = ref(true)
 const showPreview = ref(true)
+const showPresetPicker = ref(false)
 const gridSubdivisions = ref(4)
 const snap = ref(0)
 const query = ref('')
@@ -117,6 +120,13 @@ function logEvent(e) {
 
 function onManualInput() {
   if (selectedId.value !== null) selectedId.value = null
+}
+
+// Presets picked through the element's built-in dropdown also fire
+// presetchange — keep the panel list highlight in sync with them.
+function onPresetChange(e) {
+  logEvent(e)
+  selectedId.value = e.detail?.preset?.id ?? null
 }
 
 function applyPreset(p) {
@@ -179,7 +189,10 @@ onMounted(async () => {
   padding: 12px 0;
   user-select: none;
 }
-.bce-panel summary span { color: var(--vp-c-text-2); font-weight: 400; }
+.bce-panel summary span {
+  color: var(--vp-c-text-2);
+  font-weight: 400;
+}
 .bce-controls {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
@@ -187,8 +200,15 @@ onMounted(async () => {
   padding-bottom: 14px;
   font-size: 0.85rem;
 }
-.bce-controls label { display: flex; align-items: center; gap: 8px; }
-.bce-controls label:has(select) { flex-direction: column; align-items: stretch; }
+.bce-controls label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bce-controls label:has(select) {
+  flex-direction: column;
+  align-items: stretch;
+}
 .bce-controls select,
 .bce-search {
   font: inherit;
@@ -223,16 +243,29 @@ onMounted(async () => {
   cursor: pointer;
   font-size: 0.82rem;
 }
-.bce-preset:hover { background: color-mix(in srgb, var(--vp-c-brand-1) 8%, transparent); }
-.bce-preset.active { background: color-mix(in srgb, var(--vp-c-brand-1) 15%, transparent); }
-.bce-preset svg { width: 36px; height: 36px; }
+.bce-preset:hover {
+  background: color-mix(in srgb, var(--vp-c-brand-1) 8%, transparent);
+}
+.bce-preset.active {
+  background: color-mix(in srgb, var(--vp-c-brand-1) 15%, transparent);
+}
+.bce-preset svg {
+  width: 36px;
+  height: 36px;
+}
 .bce-preset svg path {
   fill: none;
   stroke: var(--vp-c-brand-1);
   stroke-width: 2;
 }
-.bce-preset-label { font-weight: 500; white-space: nowrap; }
-.bce-preset code { color: var(--vp-c-text-2); font-size: 0.68rem; }
+.bce-preset-label {
+  font-weight: 500;
+  white-space: nowrap;
+}
+.bce-preset code {
+  color: var(--vp-c-text-2);
+  font-size: 0.68rem;
+}
 .bce-log {
   font-family: var(--vp-font-family-mono, ui-monospace, monospace);
   font-size: 0.72rem;
@@ -247,19 +280,39 @@ onMounted(async () => {
 
 /* Mobile: compact layout */
 @media (max-width: 760px) {
-  .bce-playground { flex-direction: column; gap: 20px; }
-  .bce-stage { width: 100%; }
-  .bce-panel { min-width: 0; width: 100%; }
+  .bce-playground {
+    flex-direction: column;
+    gap: 20px;
+  }
+  .bce-stage {
+    width: 100%;
+  }
+  .bce-panel {
+    min-width: 0;
+    width: 100%;
+  }
 
   /* Controls in two columns, selects full-width of their cell */
-  .bce-controls { grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+  .bce-controls {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 12px;
+  }
 
   /* Preset rows: drop the numeric code column on narrow screens */
-  .bce-preset { grid-template-columns: 36px 1fr; }
-  .bce-preset code { display: none; }
-  .bce-preset svg { width: 32px; height: 32px; }
+  .bce-preset {
+    grid-template-columns: 36px 1fr;
+  }
+  .bce-preset code {
+    display: none;
+  }
+  .bce-preset svg {
+    width: 32px;
+    height: 32px;
+  }
 
   /* Tighter panels */
-  .bce-log { height: 140px; }
+  .bce-log {
+    height: 140px;
+  }
 }
 </style>
